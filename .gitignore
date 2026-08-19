@@ -1,0 +1,4 @@
+# arquivos internos de ferramentas de IA (não fazem parte do projeto)
+.agents/
+.claude/
+skills-lock.json
