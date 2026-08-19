@@ -2,3 +2,6 @@
 .agents/
 .claude/
 skills-lock.json
+
+# pré-visualização local com dados de exemplo (não é o app real)
+demo.html

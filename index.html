@@ -203,6 +203,11 @@
   .donut-center .v{font-size:15px;font-weight:700;color:var(--parchment);}
   .donut-center .l{font-size:8.5px;color:rgba(242,245,250,0.4);text-transform:uppercase;letter-spacing:0.06em;}
   .legend{display:flex;flex-direction:column;gap:7px;flex:1;min-width:0;}
+  /* no mobile o botão flutuante (+) fica sobre o canto inferior direito da tela —
+     reserva espaço para os valores da legenda não ficarem escondidos atrás dele */
+  @media (max-width:639px){
+    .legend{padding-right:56px;}
+  }
   .legend-row{display:flex;align-items:center;gap:8px;font-size:12.5px;}
   .legend-row .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
   .legend-row .name{flex:1;color:rgba(242,245,250,0.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -330,7 +335,8 @@
   :focus-visible{outline:2px solid var(--essencial);outline-offset:2px;}
 
   /* tela de login */
-  .auth-wrap{max-width:360px;margin:14vh auto 0;padding:0 18px;position:relative;z-index:1;}
+  .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 18px;position:relative;z-index:1;}
+  .auth-card{width:100%;max-width:360px;}
   .auth-card{
     background:rgba(18,21,31,0.75);
     backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
@@ -630,7 +636,7 @@ async function loadStateFromCloud(uid){
 
 /* ---------- telas: login vs app ---------- */
 function showAuthScreen(){
-  document.getElementById('screenAuth').style.display = 'block';
+  document.getElementById('screenAuth').style.display = 'flex';
   document.getElementById('screenApp').style.display = 'none';
 }
 function showAppScreen(){
