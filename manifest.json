@@ -1,6 +1,6 @@
 {
-  "name": "Bússola Gastos",
-  "short_name": "Bússola",
+  "name": "Banca",
+  "short_name": "Banca",
   "description": "Controle financeiro pessoal — gastos, entradas e saldo, sincronizado na nuvem.",
   "start_url": "./index.html",
   "scope": "./",

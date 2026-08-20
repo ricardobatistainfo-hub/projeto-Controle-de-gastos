@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Bússola Gastos">
+<meta name="apple-mobile-web-app-title" content="Banca">
 <meta name="theme-color" content="#090B12">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="description" content="Controle financeiro pessoal — gastos, entradas e saldo, sincronizado na nuvem.">
-<title>Bússola Gastos</title>
+<title>Banca</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -378,6 +378,18 @@
   }
   .logout-btn:hover{border-color:var(--neg);color:var(--neg);}
 
+  /* seletores de idioma e moeda */
+  .prefs-row{display:flex;gap:6px;align-items:center;flex-shrink:0;}
+  .prefs-select{
+    background:var(--ink);border:1px solid var(--line);color:rgba(242,245,250,0.75);
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;border-radius:8px;
+    padding:6px 7px;cursor:pointer;appearance:none;-webkit-appearance:none;
+    text-align:center;
+  }
+  .prefs-select:focus{outline:1px solid var(--essencial);border-color:var(--essencial);}
+  #screenAuth .prefs-row{justify-content:center;margin-bottom:14px;}
+  #screenAuth .prefs-select{flex:1;max-width:110px;}
+
   /* instalar app */
   .install-btn-auth{width:100%;margin-bottom:14px;padding:11px;font-size:13.5px;}
   .install-hint-auth{
@@ -418,11 +430,16 @@
 <!-- ===== TELA: LOGIN ===== -->
 <div id="screenAuth" class="auth-wrap">
   <div class="auth-card">
-    <span class="eyebrow">Controle financeiro</span>
-    <h1>Bússola Gastos</h1>
+    <div class="prefs-row">
+      <select id="langSelectAuth" class="prefs-select" aria-label="Idioma"></select>
+      <select id="currencySelectAuth" class="prefs-select" aria-label="Moeda"></select>
+    </div>
+
+    <span class="eyebrow" data-i18n="tagline">Controle financeiro</span>
+    <h1>Banca</h1>
 
     <button class="btn secondary install-btn-auth" id="installBtnAuth" style="display:none;">
-      📲 Instalar app no seu aparelho
+      📲 <span data-i18n="install_btn_auth_text">Instalar app no seu aparelho</span>
     </button>
     <p class="install-hint-auth" id="installHintAuth" style="display:none;"></p>
 
@@ -430,27 +447,27 @@
 
     <div id="authFields">
       <div class="auth-field">
-        <label>E-mail</label>
+        <label data-i18n="auth_email">E-mail</label>
         <input type="email" id="authEmail" autocomplete="email" placeholder="voce@exemplo.com">
       </div>
       <div class="auth-field">
-        <label>Senha</label>
+        <label data-i18n="auth_password">Senha</label>
         <input type="password" id="authPassword" autocomplete="current-password" placeholder="••••••••">
       </div>
     </div>
 
     <div class="auth-actions">
-      <button class="btn" id="authSubmitBtn">Entrar</button>
-      <div class="auth-divider">ou</div>
-      <button class="btn google" id="authGoogleBtn">Entrar com Google</button>
+      <button class="btn" id="authSubmitBtn" data-i18n="auth_enter">Entrar</button>
+      <div class="auth-divider" data-i18n="auth_or">ou</div>
+      <button class="btn google" id="authGoogleBtn" data-i18n="auth_google">Entrar com Google</button>
     </div>
 
     <div class="auth-switch">
-      <span id="authSwitchText">Ainda não tem conta?</span>
-      <button id="authSwitchBtn">Criar conta</button>
+      <span id="authSwitchText" data-i18n="auth_no_account">Ainda não tem conta?</span>
+      <button id="authSwitchBtn" data-i18n="auth_create_account">Criar conta</button>
     </div>
     <div class="auth-switch">
-      <button id="authForgotBtn">Esqueci minha senha</button>
+      <button id="authForgotBtn" data-i18n="auth_forgot">Esqueci minha senha</button>
     </div>
 
     <div class="auth-msg" id="authMsg"></div>
@@ -462,13 +479,17 @@
 <div class="wrap">
 
   <header class="top">
-    <span class="eyebrow">Controle financeiro</span>
-    <h1>Bússola Gastos</h1>
+    <span class="eyebrow" data-i18n="tagline">Controle financeiro</span>
+    <h1>Banca</h1>
   </header>
 
   <div class="user-bar">
     <span class="email" id="userEmailLabel"></span>
-    <button class="logout-btn" id="logoutBtn">Sair</button>
+    <div class="prefs-row">
+      <select id="langSelectApp" class="prefs-select" aria-label="Idioma"></select>
+      <select id="currencySelectApp" class="prefs-select" aria-label="Moeda"></select>
+      <button class="logout-btn" id="logoutBtn" data-i18n="logout">Sair</button>
+    </div>
   </div>
 
   <div id="saveStatus"></div>
@@ -481,27 +502,27 @@
       <div class="hud-corner tr"></div>
       <div class="day-panel-top">
         <div>
-          <div class="label"><span class="live-dot"></span> <span id="dayLabel">Gastos de hoje</span></div>
+          <div class="label"><span class="live-dot"></span> <span id="dayLabel" data-i18n="today_expenses">Gastos de hoje</span></div>
           <div class="total" id="todayTotal">€ 0,00</div>
           <div class="range" id="todayDate"></div>
         </div>
         <div class="gauge-col">
           <canvas class="pulse-wave" id="pulseWave" width="92" height="92"></canvas>
           <div class="count" id="todayCount"></div>
-          <button class="back-today-btn" id="backTodayBtn" style="display:none;">voltar para hoje</button>
+          <button class="back-today-btn" id="backTodayBtn" style="display:none;" data-i18n="back_to_today">voltar para hoje</button>
         </div>
       </div>
       <div class="day-panel-list" id="todayListArea"></div>
     </div>
 
     <div class="panel">
-      <h2><span class="live-dot"></span> Banca</h2>
+      <h2><span class="live-dot"></span> <span data-i18n="accounts_heading">Contas</span></h2>
       <div class="balance-cards" id="balanceCardsArea"></div>
     </div>
 
     <div class="week-hero">
       <div>
-        <div class="label">Total esta semana</div>
+        <div class="label" data-i18n="week_total">Total esta semana</div>
         <div class="total" id="heroTotal">€ 0,00</div>
         <div class="range" id="heroRange"></div>
       </div>
@@ -511,28 +532,28 @@
     <div class="charts-grid">
       <div class="panel">
         <h2 style="justify-content:flex-start;gap:14px;">
-          <span>Por categoria</span>
+          <span data-i18n="by_category">Por categoria</span>
           <span class="period-toggle" id="catPeriodToggle">
-            <button class="ptbtn active" data-period="semana">Semana</button>
-            <button class="ptbtn" data-period="mes">Mês</button>
+            <button class="ptbtn active" data-period="semana" data-i18n="week_toggle">Semana</button>
+            <button class="ptbtn" data-period="mes" data-i18n="month_toggle">Mês</button>
           </span>
         </h2>
         <div id="donutArea"></div>
       </div>
       <div class="panel">
-        <h2>Por dia (semana)</h2>
+        <h2 data-i18n="by_day_week">Por dia (semana)</h2>
         <div class="bars" id="barsArea"></div>
       </div>
     </div>
 
     <div class="panel">
-      <h2 id="dayListHeading">Lançamentos da semana</h2>
+      <h2 id="dayListHeading" data-i18n="entries_week">Lançamentos da semana</h2>
       <div id="dayListArea"></div>
     </div>
 
     <div class="panel">
       <h2 style="justify-content:flex-start;gap:14px;">
-        <span>Calendário</span>
+        <span data-i18n="calendar">Calendário</span>
         <span class="period-toggle" style="margin-left:auto;">
           <button class="ptbtn" id="calPrev">‹</button>
           <span id="calMonthLabel" style="font-size:10px;padding:0 8px;color:rgba(242,245,250,0.7);white-space:nowrap;"></span>
@@ -547,51 +568,51 @@
   <!-- ===== TELA: ADICIONAR GASTO/ENTRADA ===== -->
   <div id="screenAdd" style="display:none;">
     <div class="add-screen-head">
-      <button class="back-btn" id="backBtn">← voltar</button>
-      <div class="add-screen-title" id="addScreenTitle">Novo gasto</div>
+      <button class="back-btn" id="backBtn">← <span data-i18n="back">voltar</span></button>
+      <div class="add-screen-title" id="addScreenTitle" data-i18n="new_expense">Novo gasto</div>
     </div>
 
     <div class="period-toggle" id="typeToggle" style="margin-bottom:16px;">
-      <button class="ptbtn active" data-type="saida">Saída</button>
-      <button class="ptbtn" data-type="entrada">Entrada</button>
+      <button class="ptbtn active" data-type="saida" data-i18n="expense_type">Saída</button>
+      <button class="ptbtn" data-type="entrada" data-i18n="income_type">Entrada</button>
     </div>
 
     <div class="panel">
-      <h2><span class="live-dot"></span> Categorias</h2>
+      <h2><span class="live-dot"></span> <span data-i18n="categories">Categorias</span></h2>
       <div class="chip-row" id="catChips"></div>
       <div class="add-cat-row">
-        <input type="text" id="newCatInput" placeholder="Nova categoria...">
-        <button class="btn" id="addCatBtn">Adicionar</button>
+        <input type="text" id="newCatInput" data-i18n-ph="new_category_ph" placeholder="Nova categoria...">
+        <button class="btn" id="addCatBtn" data-i18n="add">Adicionar</button>
       </div>
     </div>
 
     <div class="panel">
       <div class="expense-form">
         <div>
-          <label>Valor (€)</label>
+          <label id="fValorLabel">Valor (€)</label>
           <input type="number" step="0.01" min="0" id="fValor" placeholder="0,00">
         </div>
         <div>
-          <label>Data</label>
+          <label data-i18n="date_label">Data</label>
           <input type="date" id="fData">
         </div>
         <div>
-          <label>Categoria</label>
+          <label data-i18n="category_label">Categoria</label>
           <select id="fCategoria"></select>
         </div>
         <div>
-          <label>Forma de pagamento</label>
+          <label data-i18n="payment_method_label">Forma de pagamento</label>
           <select id="fPagamento">
-            <option>Dinheiro</option>
-            <option>Cartão</option>
+            <option value="Dinheiro" data-i18n="cash">Dinheiro</option>
+            <option value="Cartão" data-i18n="card">Cartão</option>
           </select>
         </div>
         <div class="full">
-          <label>Descrição</label>
-          <input type="text" id="fDescricao" placeholder="Ex: almoço, uber, farmácia...">
+          <label data-i18n="description_label">Descrição</label>
+          <input type="text" id="fDescricao" data-i18n-ph="description_ph" placeholder="Ex: almoço, uber, farmácia...">
         </div>
         <div class="full">
-          <button class="btn" id="addExpenseBtn">Adicionar gasto</button>
+          <button class="btn" id="addExpenseBtn" data-i18n="add_expense_btn">Adicionar gasto</button>
         </div>
       </div>
     </div>
@@ -599,7 +620,7 @@
 
   <button class="fab" id="fabAdd" aria-label="Adicionar gasto">+</button>
 
-  <footer class="app-footer">salvo automaticamente na sua conta</footer>
+  <footer class="app-footer" data-i18n="footer_saved">salvo automaticamente na sua conta</footer>
 </div>
 </div>
 
@@ -607,10 +628,10 @@
 <div id="installBanner" class="install-banner" style="display:none;">
   <span class="install-banner-icon">📲</span>
   <div class="install-banner-text">
-    <strong>Instalar o Bússola Gastos</strong>
-    <span id="installBannerSub">Acesso rápido direto da tela inicial, como um app.</span>
+    <strong data-i18n="install_title">Instalar o Banca</strong>
+    <span id="installBannerSub" data-i18n="install_sub">Acesso rápido direto da tela inicial, como um app.</span>
   </div>
-  <button class="btn" id="installBtn">Instalar</button>
+  <button class="btn" id="installBtn" data-i18n="install_btn">Instalar</button>
   <button class="install-banner-close" id="installBannerClose" aria-label="Fechar aviso">×</button>
 </div>
 
@@ -642,6 +663,246 @@ const auth = getAuth(fbApp);
 const db = getFirestore(fbApp);
 let userDocRef = null;
 
+/* ======================================================================
+   IDIOMA E MOEDA
+   ====================================================================== */
+const IDIOMAS = ['pt','it','en'];
+const MOEDAS = ['EUR','BRL','USD'];
+const MOEDA_INFO = {
+  EUR: { symbol:'€', label:'€ Euro' },
+  BRL: { symbol:'R$', label:'R$ Real' },
+  USD: { symbol:'$', label:'$ Dólar' },
+};
+const LOCALE_TAG = { pt:'pt-PT', it:'it-IT', en:'en-US' };
+const DAY_LABELS_POR_IDIOMA = {
+  pt: ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'],
+  it: ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'],
+  en: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+};
+
+const I18N = {
+  pt: {
+    tagline: 'Controle financeiro',
+    auth_email: 'E-mail', auth_password: 'Senha',
+    auth_enter: 'Entrar', auth_or: 'ou', auth_google: 'Entrar com Google',
+    auth_no_account: 'Ainda não tem conta?', auth_has_account: 'Já tem conta?',
+    auth_create_account: 'Criar conta', auth_signin: 'Entrar',
+    auth_forgot: 'Esqueci minha senha',
+    auth_msg_fill: 'preencha e-mail e senha.', auth_msg_wait: 'um momento...',
+    auth_msg_reset_sent: 'e-mail de redefinição enviado — confira sua caixa de entrada.',
+    auth_msg_need_email: 'digite seu e-mail acima primeiro.',
+    err_invalid_email: 'e-mail inválido.', err_user_not_found: 'não existe conta com esse e-mail.',
+    err_wrong_password: 'senha incorreta.', err_invalid_credential: 'e-mail ou senha incorretos.',
+    err_email_in_use: 'já existe uma conta com esse e-mail.', err_weak_password: 'a senha precisa ter pelo menos 6 caracteres.',
+    err_missing_password: 'digite sua senha.', err_too_many_requests: 'muitas tentativas — aguarde um pouco e tente de novo.',
+    err_generic: 'algo deu errado. tente novamente.',
+    install_title: 'Instalar o Banca', install_sub: 'Acesso rápido direto da tela inicial, como um app.',
+    install_btn: 'Instalar', install_btn_auth_text: 'Instalar app no seu aparelho',
+    install_ios_hint: 'No iPhone: toque em Compartilhar (□↑) → "Adicionar à Tela de Início" para instalar.',
+    logout: 'Sair',
+    today_expenses: 'Gastos de hoje', day_expenses: 'Gastos do dia', back_to_today: 'voltar para hoje',
+    accounts_heading: 'Contas', week_total: 'Total esta semana',
+    entry_singular: 'lançamento', entry_plural: 'lançamentos',
+    by_category: 'Por categoria', week_toggle: 'Semana', month_toggle: 'Mês',
+    by_day_week: 'Por dia (semana)', entries_week: 'Lançamentos da semana', entries_month: 'Lançamentos do mês',
+    calendar: 'Calendário', back: 'voltar',
+    new_expense: 'Novo gasto', new_income: 'Nova entrada',
+    expense_type: 'Saída', income_type: 'Entrada',
+    categories: 'Categorias', new_category_ph: 'Nova categoria...', add: 'Adicionar',
+    value_label: 'Valor', date_label: 'Data', category_label: 'Categoria',
+    payment_method_label: 'Forma de pagamento', cash: 'Dinheiro', card: 'Cartão',
+    description_label: 'Descrição', description_ph: 'Ex: almoço, uber, farmácia...',
+    add_expense_btn: 'Adicionar gasto', add_income_btn: 'Adicionar entrada',
+    footer_saved: 'salvo automaticamente na sua conta',
+    no_categories: 'nenhuma categoria ainda — crie a primeira abaixo',
+    create_category_first: 'crie uma categoria primeiro', no_category: 'sem categoria',
+    no_expenses_today: 'nenhum gasto registrado hoje ainda',
+    no_expenses_period: 'nenhum gasto registrado neste período ainda',
+    no_entries_week: 'nenhum lançamento nesta semana ainda',
+    no_description: '(sem descrição)', categ_singular: 'CATEG.', categ_plural: 'CATEGS.',
+    edit_balance_title: 'Editar saldo',
+    loading_data: 'carregando seus dados...', loaded_data: 'dados carregados da sua conta',
+    new_account: 'conta nova — nenhum dado salvo ainda',
+    load_error: 'não foi possível carregar seus dados: ', saved_at: 'salvo às ', save_error: 'erro ao salvar: ',
+    fill_required: 'preencha valor, data e categoria', total_label: 'total',
+  },
+  it: {
+    tagline: 'Controllo finanziario',
+    auth_email: 'E-mail', auth_password: 'Password',
+    auth_enter: 'Accedi', auth_or: 'o', auth_google: 'Accedi con Google',
+    auth_no_account: 'Non hai un account?', auth_has_account: 'Hai già un account?',
+    auth_create_account: 'Crea account', auth_signin: 'Accedi',
+    auth_forgot: 'Password dimenticata',
+    auth_msg_fill: 'inserisci e-mail e password.', auth_msg_wait: 'un momento...',
+    auth_msg_reset_sent: 'e-mail di reimpostazione inviata — controlla la tua casella di posta.',
+    auth_msg_need_email: 'inserisci prima la tua e-mail qui sopra.',
+    err_invalid_email: 'e-mail non valida.', err_user_not_found: 'non esiste un account con questa e-mail.',
+    err_wrong_password: 'password errata.', err_invalid_credential: 'e-mail o password errati.',
+    err_email_in_use: 'esiste già un account con questa e-mail.', err_weak_password: 'la password deve avere almeno 6 caratteri.',
+    err_missing_password: 'inserisci la tua password.', err_too_many_requests: 'troppi tentativi — attendi un momento e riprova.',
+    err_generic: 'qualcosa è andato storto. riprova.',
+    install_title: 'Installa Banca', install_sub: 'Accesso rapido dalla schermata Home, come un\'app.',
+    install_btn: 'Installa', install_btn_auth_text: 'Installa l\'app sul tuo dispositivo',
+    install_ios_hint: 'Su iPhone: tocca Condividi (□↑) → "Aggiungi alla schermata Home" per installare.',
+    logout: 'Esci',
+    today_expenses: 'Spese di oggi', day_expenses: 'Spese del giorno', back_to_today: 'torna a oggi',
+    accounts_heading: 'Conti', week_total: 'Totale questa settimana',
+    entry_singular: 'movimento', entry_plural: 'movimenti',
+    by_category: 'Per categoria', week_toggle: 'Settimana', month_toggle: 'Mese',
+    by_day_week: 'Per giorno (settimana)', entries_week: 'Movimenti della settimana', entries_month: 'Movimenti del mese',
+    calendar: 'Calendario', back: 'indietro',
+    new_expense: 'Nuova spesa', new_income: 'Nuova entrata',
+    expense_type: 'Uscita', income_type: 'Entrata',
+    categories: 'Categorie', new_category_ph: 'Nuova categoria...', add: 'Aggiungi',
+    value_label: 'Importo', date_label: 'Data', category_label: 'Categoria',
+    payment_method_label: 'Metodo di pagamento', cash: 'Contanti', card: 'Carta',
+    description_label: 'Descrizione', description_ph: 'Es: pranzo, taxi, farmacia...',
+    add_expense_btn: 'Aggiungi spesa', add_income_btn: 'Aggiungi entrata',
+    footer_saved: 'salvato automaticamente nel tuo account',
+    no_categories: 'nessuna categoria ancora — creane una qui sotto',
+    create_category_first: 'crea prima una categoria', no_category: 'senza categoria',
+    no_expenses_today: 'nessuna spesa registrata oggi',
+    no_expenses_period: 'nessuna spesa registrata in questo periodo',
+    no_entries_week: 'nessun movimento questa settimana',
+    no_description: '(senza descrizione)', categ_singular: 'CAT.', categ_plural: 'CAT.',
+    edit_balance_title: 'Modifica saldo',
+    loading_data: 'caricamento dei tuoi dati...', loaded_data: 'dati caricati dal tuo account',
+    new_account: 'nuovo account — nessun dato salvato ancora',
+    load_error: 'non è stato possibile caricare i tuoi dati: ', saved_at: 'salvato alle ', save_error: 'errore nel salvataggio: ',
+    fill_required: 'inserisci importo, data e categoria', total_label: 'totale',
+  },
+  en: {
+    tagline: 'Financial control',
+    auth_email: 'Email', auth_password: 'Password',
+    auth_enter: 'Sign in', auth_or: 'or', auth_google: 'Sign in with Google',
+    auth_no_account: "Don't have an account?", auth_has_account: 'Already have an account?',
+    auth_create_account: 'Create account', auth_signin: 'Sign in',
+    auth_forgot: 'Forgot my password',
+    auth_msg_fill: 'fill in email and password.', auth_msg_wait: 'one moment...',
+    auth_msg_reset_sent: 'reset email sent — check your inbox.',
+    auth_msg_need_email: 'enter your email above first.',
+    err_invalid_email: 'invalid email.', err_user_not_found: 'no account exists with this email.',
+    err_wrong_password: 'incorrect password.', err_invalid_credential: 'incorrect email or password.',
+    err_email_in_use: 'an account with this email already exists.', err_weak_password: 'password must be at least 6 characters.',
+    err_missing_password: 'enter your password.', err_too_many_requests: 'too many attempts — wait a moment and try again.',
+    err_generic: 'something went wrong. please try again.',
+    install_title: 'Install Banca', install_sub: 'Quick access from your home screen, like an app.',
+    install_btn: 'Install', install_btn_auth_text: 'Install app on your device',
+    install_ios_hint: 'On iPhone: tap Share (□↑) → "Add to Home Screen" to install.',
+    logout: 'Sign out',
+    today_expenses: "Today's expenses", day_expenses: "Day's expenses", back_to_today: 'back to today',
+    accounts_heading: 'Accounts', week_total: 'Total this week',
+    entry_singular: 'entry', entry_plural: 'entries',
+    by_category: 'By category', week_toggle: 'Week', month_toggle: 'Month',
+    by_day_week: 'By day (week)', entries_week: "This week's entries", entries_month: "This month's entries",
+    calendar: 'Calendar', back: 'back',
+    new_expense: 'New expense', new_income: 'New income',
+    expense_type: 'Expense', income_type: 'Income',
+    categories: 'Categories', new_category_ph: 'New category...', add: 'Add',
+    value_label: 'Amount', date_label: 'Date', category_label: 'Category',
+    payment_method_label: 'Payment method', cash: 'Cash', card: 'Card',
+    description_label: 'Description', description_ph: 'E.g: lunch, uber, pharmacy...',
+    add_expense_btn: 'Add expense', add_income_btn: 'Add income',
+    footer_saved: 'saved automatically to your account',
+    no_categories: 'no categories yet — create the first one below',
+    create_category_first: 'create a category first', no_category: 'no category',
+    no_expenses_today: 'no expenses recorded today yet',
+    no_expenses_period: 'no expenses recorded this period yet',
+    no_entries_week: 'no entries this week yet',
+    no_description: '(no description)', categ_singular: 'CAT.', categ_plural: 'CATS.',
+    edit_balance_title: 'Edit balance',
+    loading_data: 'loading your data...', loaded_data: 'data loaded from your account',
+    new_account: 'new account — no data saved yet',
+    load_error: 'could not load your data: ', saved_at: 'saved at ', save_error: 'error saving: ',
+    fill_required: 'fill in amount, date and category', total_label: 'total',
+  },
+};
+
+function idiomaPadrao(){
+  const salvo = localStorage.getItem('banca-lang');
+  if(salvo && IDIOMAS.includes(salvo)) return salvo;
+  const nav = (navigator.language || 'pt').toLowerCase();
+  if(nav.startsWith('it')) return 'it';
+  if(nav.startsWith('en')) return 'en';
+  return 'pt';
+}
+function moedaPadrao(){
+  const salva = localStorage.getItem('banca-currency');
+  if(salva && MOEDAS.includes(salva)) return salva;
+  return 'EUR';
+}
+
+let currentLang = idiomaPadrao();
+let currentMoeda = moedaPadrao();
+
+function t(key){
+  return (I18N[currentLang] && I18N[currentLang][key]) || I18N.pt[key] || key;
+}
+function localeTag(){ return LOCALE_TAG[currentLang] || 'pt-PT'; }
+function dayLabels(){ return DAY_LABELS_POR_IDIOMA[currentLang] || DAY_LABELS_POR_IDIOMA.pt; }
+function entryCountLabel(n){ return n===1 ? t('entry_singular') : t('entry_plural'); }
+
+function popularSeletoresPrefs(){
+  const langOptions = IDIOMAS.map(l=>`<option value="${l}">${l.toUpperCase()}</option>`).join('');
+  const moedaOptions = MOEDAS.map(m=>`<option value="${m}">${MOEDA_INFO[m].label}</option>`).join('');
+  ['langSelectAuth','langSelectApp'].forEach(id=>{
+    const el = document.getElementById(id);
+    el.innerHTML = langOptions;
+    el.value = currentLang;
+  });
+  ['currencySelectAuth','currencySelectApp'].forEach(id=>{
+    const el = document.getElementById(id);
+    el.innerHTML = moedaOptions;
+    el.value = currentMoeda;
+  });
+}
+
+function aplicarPrefsNaTela(){
+  document.documentElement.lang = localeTag();
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    el.placeholder = t(el.dataset.i18nPh);
+  });
+  document.getElementById('fValorLabel').textContent = `${t('value_label')} (${MOEDA_INFO[currentMoeda].symbol})`;
+
+  // textos dinâmicos que dependem do modo atual (login/cadastro, saída/entrada)
+  document.getElementById('authSubmitBtn').textContent = authMode === 'login' ? t('auth_enter') : t('auth_create_account');
+  document.getElementById('authSwitchText').textContent = authMode === 'login' ? t('auth_no_account') : t('auth_has_account');
+  document.getElementById('authSwitchBtn').textContent = authMode === 'login' ? t('auth_create_account') : t('auth_signin');
+  document.getElementById('addScreenTitle').textContent = addType === 'entrada' ? t('new_income') : t('new_expense');
+  document.getElementById('addExpenseBtn').textContent = addType === 'entrada' ? t('add_income_btn') : t('add_expense_btn');
+  document.getElementById('dayListHeading').textContent = catPeriod==='mes' ? t('entries_month') : t('entries_week');
+
+  if(installMode) syncInstallUI();
+  if(userDocRef) renderAll();
+}
+
+function mudarIdioma(novo){
+  if(!IDIOMAS.includes(novo)) return;
+  currentLang = novo;
+  localStorage.setItem('banca-lang', novo);
+  if(state && state.prefs){ state.prefs.idioma = novo; saveState(); }
+  popularSeletoresPrefs();
+  aplicarPrefsNaTela();
+}
+function mudarMoeda(nova){
+  if(!MOEDAS.includes(nova)) return;
+  currentMoeda = nova;
+  localStorage.setItem('banca-currency', nova);
+  if(state && state.prefs){ state.prefs.moeda = nova; saveState(); }
+  popularSeletoresPrefs();
+  aplicarPrefsNaTela();
+}
+
+['langSelectAuth','langSelectApp'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', (e)=> mudarIdioma(e.target.value));
+});
+['currencySelectAuth','currencySelectApp'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', (e)=> mudarMoeda(e.target.value));
+});
+
 function setStatus(msg, isError){
   const el = document.getElementById('saveStatus');
   if(!el) return;
@@ -650,7 +911,11 @@ function setStatus(msg, isError){
 }
 
 function defaultState(){
-  return { categories: [], expenses: [], incomes: [], saldoAnchor: {Dinheiro:{valor:0,criadoEm:0}, 'Cartão':{valor:0,criadoEm:0}} };
+  return {
+    categories: [], expenses: [], incomes: [],
+    saldoAnchor: {Dinheiro:{valor:0,criadoEm:0}, 'Cartão':{valor:0,criadoEm:0}},
+    prefs: { idioma: currentLang, moeda: currentMoeda },
+  };
 }
 
 function normalizeState(){
@@ -658,6 +923,9 @@ function normalizeState(){
   if(!state.expenses) state.expenses = [];
   if(!state.incomes) state.incomes = [];
   if(!state.saldoAnchor) state.saldoAnchor = {Dinheiro:{valor:0,criadoEm:0}, 'Cartão':{valor:0,criadoEm:0}};
+  if(!state.prefs) state.prefs = { idioma: currentLang, moeda: currentMoeda };
+  if(!IDIOMAS.includes(state.prefs.idioma)) state.prefs.idioma = currentLang;
+  if(!MOEDAS.includes(state.prefs.moeda)) state.prefs.moeda = currentMoeda;
 
   if(state.saldoInicial){
     state.saldoAnchor.Dinheiro = {valor: state.saldoInicial.Dinheiro||0, criadoEm:0};
@@ -677,17 +945,22 @@ async function loadStateFromCloud(uid){
     const snap = await getDoc(userDocRef);
     if(snap.exists()){
       state = snap.data();
-      setStatus('dados carregados da sua conta');
+      setStatus(t('loaded_data'));
     }else{
       state = defaultState();
       await setDoc(userDocRef, state);
-      setStatus('conta nova — nenhum dado salvo ainda');
+      setStatus(t('new_account'));
     }
   }catch(e){
     state = defaultState();
-    setStatus('⚠️ não foi possível carregar seus dados: ' + (e.message||'erro desconhecido'), true);
+    setStatus('⚠️ ' + t('load_error') + (e.message||'erro desconhecido'), true);
   }
   normalizeState();
+  currentLang = state.prefs.idioma;
+  currentMoeda = state.prefs.moeda;
+  localStorage.setItem('banca-lang', currentLang);
+  localStorage.setItem('banca-currency', currentMoeda);
+  popularSeletoresPrefs();
 }
 
 /* ---------- telas: login vs app ---------- */
@@ -710,31 +983,29 @@ function setAuthMsg(msg, kind){
 
 function traduzErroAuth(code){
   const map = {
-    'auth/invalid-email': 'e-mail inválido.',
-    'auth/user-not-found': 'não existe conta com esse e-mail.',
-    'auth/wrong-password': 'senha incorreta.',
-    'auth/invalid-credential': 'e-mail ou senha incorretos.',
-    'auth/email-already-in-use': 'já existe uma conta com esse e-mail.',
-    'auth/weak-password': 'a senha precisa ter pelo menos 6 caracteres.',
-    'auth/missing-password': 'digite sua senha.',
-    'auth/too-many-requests': 'muitas tentativas — aguarde um pouco e tente de novo.'
+    'auth/invalid-email': t('err_invalid_email'),
+    'auth/user-not-found': t('err_user_not_found'),
+    'auth/wrong-password': t('err_wrong_password'),
+    'auth/invalid-credential': t('err_invalid_credential'),
+    'auth/email-already-in-use': t('err_email_in_use'),
+    'auth/weak-password': t('err_weak_password'),
+    'auth/missing-password': t('err_missing_password'),
+    'auth/too-many-requests': t('err_too_many_requests'),
   };
-  return map[code] || 'algo deu errado. tente novamente.';
+  return map[code] || t('err_generic');
 }
 
 document.getElementById('authSwitchBtn').addEventListener('click', ()=>{
   authMode = authMode === 'login' ? 'signup' : 'login';
-  document.getElementById('authSubmitBtn').textContent = authMode === 'login' ? 'Entrar' : 'Criar conta';
-  document.getElementById('authSwitchText').textContent = authMode === 'login' ? 'Ainda não tem conta?' : 'Já tem conta?';
-  document.getElementById('authSwitchBtn').textContent = authMode === 'login' ? 'Criar conta' : 'Entrar';
+  aplicarPrefsNaTela();
   setAuthMsg('');
 });
 
 document.getElementById('authSubmitBtn').addEventListener('click', async ()=>{
   const email = document.getElementById('authEmail').value.trim();
   const password = document.getElementById('authPassword').value;
-  if(!email || !password){ setAuthMsg('preencha e-mail e senha.', 'error'); return; }
-  setAuthMsg('um momento...');
+  if(!email || !password){ setAuthMsg(t('auth_msg_fill'), 'error'); return; }
+  setAuthMsg(t('auth_msg_wait'));
   try{
     if(authMode === 'login'){
       await signInWithEmailAndPassword(auth, email, password);
@@ -747,7 +1018,7 @@ document.getElementById('authSubmitBtn').addEventListener('click', async ()=>{
 });
 
 document.getElementById('authGoogleBtn').addEventListener('click', async ()=>{
-  setAuthMsg('um momento...');
+  setAuthMsg(t('auth_msg_wait'));
   try{
     await signInWithPopup(auth, new GoogleAuthProvider());
   }catch(e){
@@ -757,10 +1028,10 @@ document.getElementById('authGoogleBtn').addEventListener('click', async ()=>{
 
 document.getElementById('authForgotBtn').addEventListener('click', async ()=>{
   const email = document.getElementById('authEmail').value.trim();
-  if(!email){ setAuthMsg('digite seu e-mail acima primeiro.', 'error'); return; }
+  if(!email){ setAuthMsg(t('auth_msg_need_email'), 'error'); return; }
   try{
     await sendPasswordResetEmail(auth, email);
-    setAuthMsg('e-mail de redefinição enviado — confira sua caixa de entrada.', 'ok');
+    setAuthMsg(t('auth_msg_reset_sent'), 'ok');
   }catch(e){
     setAuthMsg(traduzErroAuth(e.code), 'error');
   }
@@ -787,8 +1058,6 @@ function foiDispensadoRecentemente(){
 let deferredInstallPrompt = null;
 let installMode = null; // 'prompt' (Chrome/Android/desktop) | 'ios' (dica manual) | null
 
-const DICA_IOS = 'No iPhone: toque em Compartilhar (□↑) → "Adicionar à Tela de Início" para instalar.';
-
 function telaAtual(){
   return document.getElementById('screenApp').style.display !== 'none' ? 'app' : 'auth';
 }
@@ -812,16 +1081,16 @@ function syncInstallUI(){
       authBtn.style.display = 'block';
     }else{
       document.getElementById('installBtn').style.display = 'inline-flex';
-      document.getElementById('installBannerSub').textContent = 'Acesso rápido direto da tela inicial, como um app.';
+      document.getElementById('installBannerSub').textContent = t('install_sub');
       banner.style.display = 'flex';
     }
   }else if(installMode === 'ios'){
     if(naTelaDeLogin){
-      authHint.textContent = '📲 ' + DICA_IOS;
+      authHint.textContent = '📲 ' + t('install_ios_hint');
       authHint.style.display = 'block';
     }else{
       document.getElementById('installBtn').style.display = 'none';
-      document.getElementById('installBannerSub').textContent = DICA_IOS;
+      document.getElementById('installBannerSub').textContent = t('install_ios_hint');
       banner.style.display = 'flex';
     }
   }
@@ -878,9 +1147,10 @@ onAuthStateChanged(auth, async (user)=>{
     document.getElementById('userEmailLabel').textContent = user.email || '';
     showAppScreen();
     syncInstallUI();
-    setStatus('carregando seus dados...');
+    setStatus(t('loading_data'));
     await loadStateFromCloud(user.uid);
     document.getElementById('fData').value = isoDate(new Date());
+    aplicarPrefsNaTela();
     renderAll();
     showScreen('dashboard');
   }else{
@@ -894,7 +1164,6 @@ onAuthStateChanged(auth, async (user)=>{
 
 // paleta categórica validada (contraste + distinção para daltonismo) contra o fundo escuro do app
 const PALETTE = ['#3987e5','#d95926','#199e70','#c98500','#d55181','#008300','#9085e9','#e66767'];
-const DAY_LABELS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 
 let state = defaultState();
 
@@ -903,15 +1172,18 @@ function saveState(){
   setDoc(userDocRef, state)
     .then(()=>{
       const now = new Date();
-      setStatus('✓ salvo às ' + now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));
+      setStatus('✓ ' + t('saved_at') + now.toLocaleTimeString(localeTag(),{hour:'2-digit',minute:'2-digit'}));
     })
     .catch(e=>{
-      setStatus('⚠️ erro ao salvar: ' + (e.message||'desconhecido'), true);
+      setStatus('⚠️ ' + t('save_error') + (e.message||'desconhecido'), true);
     });
 }
 
-function fmtBRL(v){
-  return '€' + v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+function fmtNumber(v){
+  return v.toLocaleString(localeTag(), {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtMoney(v){
+  return MOEDA_INFO[currentMoeda].symbol + ' ' + fmtNumber(v);
 }
 
 const lastNumberValues = {};
@@ -926,9 +1198,9 @@ function animateNumber(elId, target){
     const p = Math.min(1, (now - t0)/duration);
     const eased = 1 - Math.pow(1-p, 3);
     const val = from + (target - from) * eased;
-    el.textContent = fmtBRL(val);
+    el.textContent = fmtMoney(val);
     if(p < 1) requestAnimationFrame(tick);
-    else el.textContent = fmtBRL(target);
+    else el.textContent = fmtMoney(target);
   }
   requestAnimationFrame(tick);
 }
@@ -995,7 +1267,7 @@ function renderMiniPie(viewExpenses){
     ctx.fillText(String(entries.length), cx, cy+1);
     ctx.font = '6.5px monospace';
     ctx.fillStyle = 'rgba(242,245,250,0.4)';
-    ctx.fillText(entries.length===1?'CATEG.':'CATEGS.', cx, cy+11);
+    ctx.fillText(entries.length===1?t('categ_singular'):t('categ_plural'), cx, cy+11);
 
     pieAnim = requestAnimationFrame(frame);
   }
@@ -1023,6 +1295,14 @@ function isoDate(d){
 
 function catById(id){ return state.categories.find(c=>c.id===id); }
 
+// os valores 'Dinheiro'/'Cartão' continuam sendo a chave salva nos dados —
+// isso só traduz o texto mostrado na tela, sem afetar o que já está salvo.
+function pagamentoLabel(valor){
+  if(valor==='Dinheiro') return t('cash');
+  if(valor==='Cartão') return t('card');
+  return valor;
+}
+
 function renderCategories(){
   const wrap = document.getElementById('catChips');
   wrap.innerHTML = state.categories.length
@@ -1032,7 +1312,7 @@ function renderCategories(){
         ${escapeHtml(c.label)}
         <button data-delcat="${c.id}">×</button>
       </div>`).join('')
-    : `<div class="empty-state">nenhuma categoria ainda — crie a primeira abaixo</div>`;
+    : `<div class="empty-state">${t('no_categories')}</div>`;
 
   wrap.querySelectorAll('[data-delcat]').forEach(el=>{
     el.addEventListener('click', ()=>{
@@ -1047,7 +1327,7 @@ function renderCategories(){
   const prev = sel.value;
   sel.innerHTML = state.categories.length
     ? state.categories.map(c=>`<option value="${c.id}">${escapeHtml(c.label)}</option>`).join('')
-    : `<option value="">crie uma categoria primeiro</option>`;
+    : `<option value="">${t('create_category_first')}</option>`;
   if(state.categories.some(c=>c.id===prev)) sel.value = prev;
 }
 
@@ -1081,14 +1361,14 @@ document.getElementById('addExpenseBtn').addEventListener('click', ()=>{
   const descricao = document.getElementById('fDescricao').value.trim();
 
   if(!valor || valor<=0 || !data || !categoriaId){
-    setStatus('⚠️ preencha valor, data e categoria', true);
+    setStatus('⚠️ ' + t('fill_required'), true);
     return;
   }
 
   const record = {
     id:'x'+Date.now()+Math.random().toString(36).slice(2,6),
     valor, data, categoriaId, pagamento,
-    descricao: descricao || '(sem descrição)',
+    descricao: descricao || t('no_description'),
     criadoEm: Date.now()
   };
 
@@ -1106,9 +1386,8 @@ document.querySelectorAll('#typeToggle .ptbtn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     addType = btn.dataset.type;
     document.querySelectorAll('#typeToggle .ptbtn').forEach(b=> b.classList.toggle('active', b===btn));
-    const isEntrada = addType==='entrada';
-    document.getElementById('addScreenTitle').textContent = isEntrada ? 'Nova entrada' : 'Novo gasto';
-    document.getElementById('addExpenseBtn').textContent = isEntrada ? 'Adicionar entrada' : 'Adicionar gasto';
+    document.getElementById('addScreenTitle').textContent = addType==='entrada' ? t('new_income') : t('new_expense');
+    document.getElementById('addExpenseBtn').textContent = addType==='entrada' ? t('add_income_btn') : t('add_expense_btn');
   });
 });
 
@@ -1137,18 +1416,18 @@ function renderAll(){
   const viewDate = new Date(viewIso+'T12:00:00');
   const isToday = viewIso===isoDate(now);
 
-  document.getElementById('dayLabel').textContent = isToday ? 'Gastos de hoje' : 'Gastos do dia';
+  document.getElementById('dayLabel').textContent = isToday ? t('today_expenses') : t('day_expenses');
   animateNumber('todayTotal', viewTotal);
-  document.getElementById('todayDate').textContent = viewDate.toLocaleDateString('pt-BR',{weekday:'long', day:'2-digit', month:'long'});
-  document.getElementById('todayCount').innerHTML = `<b>${viewExpenses.length}</b> lançamento(s)`;
+  document.getElementById('todayDate').textContent = viewDate.toLocaleDateString(localeTag(),{weekday:'long', day:'2-digit', month:'long'});
+  document.getElementById('todayCount').innerHTML = `<b>${viewExpenses.length}</b> ${entryCountLabel(viewExpenses.length)}`;
   document.getElementById('backTodayBtn').style.display = isToday ? 'none' : 'inline-block';
   renderTodayList(viewExpenses);
   renderMiniPie(viewExpenses);
 
   animateNumber('heroTotal', total);
   document.getElementById('heroRange').textContent =
-    start.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}) + ' – ' + end.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
-  document.getElementById('heroCount').innerHTML = `<b>${weekExpenses.length}</b> lançamento(s)`;
+    start.toLocaleDateString(localeTag(),{day:'2-digit',month:'short'}) + ' – ' + end.toLocaleDateString(localeTag(),{day:'2-digit',month:'short'});
+  document.getElementById('heroCount').innerHTML = `<b>${weekExpenses.length}</b> ${entryCountLabel(weekExpenses.length)}`;
 
   const {start:mStart, end:mEnd} = monthRange(now);
   const monthExpenses = state.expenses.filter(e=>{
@@ -1161,7 +1440,7 @@ function renderAll(){
   renderDonut(catData, catTotal);
   renderBars(weekExpenses, start, now);
 
-  document.getElementById('dayListHeading').textContent = catPeriod==='mes' ? 'Lançamentos do mês' : 'Lançamentos da semana';
+  document.getElementById('dayListHeading').textContent = catPeriod==='mes' ? t('entries_month') : t('entries_week');
   renderDayList(catData, catPeriod==='mes' ? mStart : start);
 
   renderCalendar();
@@ -1170,21 +1449,21 @@ function renderAll(){
 function renderTodayList(todayExpenses){
   const area = document.getElementById('todayListArea');
   if(!todayExpenses.length){
-    area.innerHTML = `<div class="empty-state">nenhum gasto registrado hoje ainda</div>`;
+    area.innerHTML = `<div class="empty-state">${t('no_expenses_today')}</div>`;
     return;
   }
   const items = [...todayExpenses].sort((a,b)=> b.id.localeCompare(a.id));
   area.innerHTML = items.map(e=>{
     const cat = catById(e.categoriaId);
     const color = cat ? cat.color : '#888';
-    const catLabel = cat ? cat.label : 'sem categoria';
+    const catLabel = cat ? cat.label : t('no_category');
     return `<div class="expense-row" data-id="${e.id}">
       <span class="cdot" style="background:${color};box-shadow:0 0 6px ${color};"></span>
       <div class="info">
         <div class="desc">${escapeHtml(e.descricao)}</div>
-        <div class="meta">${escapeHtml(catLabel)} · ${escapeHtml(e.pagamento)}</div>
+        <div class="meta">${escapeHtml(catLabel)} · ${escapeHtml(pagamentoLabel(e.pagamento))}</div>
       </div>
-      <div class="amount">-${fmtBRL(e.valor)}</div>
+      <div class="amount">-${fmtMoney(e.valor)}</div>
       <button class="del" data-del="${e.id}">×</button>
     </div>`;
   }).join('');
@@ -1207,7 +1486,7 @@ function renderDonut(weekExpenses, total){
   const entries = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
 
   if(!entries.length){
-    area.innerHTML = `<div class="empty-state">nenhum gasto registrado neste período ainda</div>`;
+    area.innerHTML = `<div class="empty-state">${t('no_expenses_period')}</div>`;
     return;
   }
 
@@ -1222,12 +1501,12 @@ function renderDonut(weekExpenses, total){
 
   const legend = entries.map(([catId,val])=>{
     const cat = catById(catId);
-    const label = cat ? cat.label : 'sem categoria';
+    const label = cat ? cat.label : t('no_category');
     const color = cat ? cat.color : '#888';
     return `<div class="legend-row">
       <span class="dot" style="background:${color};box-shadow:0 0 6px ${color};"></span>
       <span class="name">${escapeHtml(label)}</span>
-      <span class="val">${fmtBRL(val)}</span>
+      <span class="val">${fmtMoney(val)}</span>
     </div>`;
   }).join('');
 
@@ -1235,8 +1514,8 @@ function renderDonut(weekExpenses, total){
     <div class="donut-wrap">
       <div class="donut" style="background:conic-gradient(${stops});">
         <div class="donut-center">
-          <div class="v">${fmtBRL(total).replace('€','').trim()}</div>
-          <div class="l">total</div>
+          <div class="v">${fmtNumber(total)}</div>
+          <div class="l">${t('total_label')}</div>
         </div>
       </div>
       <div class="legend">${legend}</div>
@@ -1257,9 +1536,9 @@ function renderBars(weekExpenses, weekStart, now){
   area.innerHTML = totals.map((v,i)=>{
     const h = Math.max((v/max)*100, v>0?4:0);
     return `<div class="bar-col ${i===todayIdx?'today':''}">
-      <div class="dayval">${v>0? fmtBRL(v).replace('€','').trim() : ''}</div>
+      <div class="dayval">${v>0? fmtNumber(v) : ''}</div>
       <div class="bar" style="height:${h}%;"></div>
-      <div class="daylabel">${DAY_LABELS[i]}</div>
+      <div class="daylabel">${dayLabels()[i]}</div>
     </div>`;
   }).join('');
 }
@@ -1267,7 +1546,7 @@ function renderBars(weekExpenses, weekStart, now){
 function renderDayList(weekExpenses, weekStart){
   const area = document.getElementById('dayListArea');
   if(!weekExpenses.length){
-    area.innerHTML = `<div class="empty-state">nenhum lançamento nesta semana ainda</div>`;
+    area.innerHTML = `<div class="empty-state">${t('no_entries_week')}</div>`;
     return;
   }
 
@@ -1279,25 +1558,25 @@ function renderDayList(weekExpenses, weekStart){
     const items = byDay[day].sort((a,b)=> b.id.localeCompare(a.id));
     const dayTotal = items.reduce((s,e)=>s+e.valor,0);
     const d = new Date(day+'T12:00:00');
-    const label = d.toLocaleDateString('pt-BR',{weekday:'long', day:'2-digit', month:'2-digit'});
+    const label = d.toLocaleDateString(localeTag(),{weekday:'long', day:'2-digit', month:'2-digit'});
 
     const rows = items.map(e=>{
       const cat = catById(e.categoriaId);
       const color = cat ? cat.color : '#888';
-      const catLabel = cat ? cat.label : 'sem categoria';
+      const catLabel = cat ? cat.label : t('no_category');
       return `<div class="expense-row" data-id="${e.id}">
         <span class="cdot" style="background:${color};box-shadow:0 0 6px ${color};"></span>
         <div class="info">
           <div class="desc">${escapeHtml(e.descricao)}</div>
-          <div class="meta">${escapeHtml(catLabel)} · ${escapeHtml(e.pagamento)}</div>
+          <div class="meta">${escapeHtml(catLabel)} · ${escapeHtml(pagamentoLabel(e.pagamento))}</div>
         </div>
-        <div class="amount">-${fmtBRL(e.valor)}</div>
+        <div class="amount">-${fmtMoney(e.valor)}</div>
         <button class="del" data-del="${e.id}">×</button>
       </div>`;
     }).join('');
 
     return `<div class="day-group">
-      <div class="day-group-head"><span>${label}</span><span class="dtotal">${fmtBRL(dayTotal)}</span></div>
+      <div class="day-group-head"><span>${label}</span><span class="dtotal">${fmtMoney(dayTotal)}</span></div>
       ${rows}
     </div>`;
   }).join('');
@@ -1323,12 +1602,12 @@ function expensesOnDay(iso){
 }
 
 function renderCalendar(){
-  const label = viewedMonth.toLocaleDateString('pt-BR',{month:'long', year:'numeric'});
+  const label = viewedMonth.toLocaleDateString(localeTag(),{month:'long', year:'numeric'});
   document.getElementById('calMonthLabel').textContent = label;
   document.getElementById('calPrev').disabled = viewedMonth <= earliestMonth;
   document.getElementById('calNext').disabled = viewedMonth >= latestMonth;
 
-  document.getElementById('calWeekdays').innerHTML = DAY_LABELS.map(d=>`<div>${d}</div>`).join('');
+  document.getElementById('calWeekdays').innerHTML = dayLabels().map(d=>`<div>${d}</div>`).join('');
 
   const year = viewedMonth.getFullYear(), month = viewedMonth.getMonth();
   const firstDay = new Date(year, month, 1);
@@ -1377,9 +1656,9 @@ function renderBalanceCards(){
   area.innerHTML = methods.map(m=>{
     const v = currentBalance(m.key);
     return `<div class="balance-card ${m.cls}">
-      <button class="bc-edit" data-editbtn="${m.key}" title="Editar saldo">✎</button>
-      <div class="bc-label">${m.key}</div>
-      <div class="bc-value ${v<0?'neg':''}" data-bcvalue="${m.key}">${fmtBRL(v)}</div>
+      <button class="bc-edit" data-editbtn="${m.key}" title="${t('edit_balance_title')}">✎</button>
+      <div class="bc-label">${escapeHtml(pagamentoLabel(m.key))}</div>
+      <div class="bc-value ${v<0?'neg':''}" data-bcvalue="${m.key}">${fmtMoney(v)}</div>
       <input type="number" step="0.01" class="bc-edit-input" data-method="${m.key}" value="${v.toFixed(2)}" style="display:none;">
     </div>`;
   }).join('');
@@ -1421,8 +1700,8 @@ function showScreen(name){
     document.getElementById('fData').value = isoDate(new Date());
     addType = 'saida';
     document.querySelectorAll('#typeToggle .ptbtn').forEach(b=> b.classList.toggle('active', b.dataset.type==='saida'));
-    document.getElementById('addScreenTitle').textContent = 'Novo gasto';
-    document.getElementById('addExpenseBtn').textContent = 'Adicionar gasto';
+    document.getElementById('addScreenTitle').textContent = t('new_expense');
+    document.getElementById('addExpenseBtn').textContent = t('add_expense_btn');
   }else{
     dash.style.display='block';
     add.style.display='none';
@@ -1457,6 +1736,9 @@ function showScreen(name){
     viewedMonth = new Date(viewedMonth.getFullYear(), viewedMonth.getMonth()+1, 1);
     renderCalendar();
   });
+
+  popularSeletoresPrefs();
+  aplicarPrefsNaTela();
 })();
 </script>
 </body>
