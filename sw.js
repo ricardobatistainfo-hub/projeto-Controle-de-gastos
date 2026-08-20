@@ -1,8 +1,8 @@
 // service worker mínimo — só o necessário para o navegador considerar o app instalável
 // e permitir reabrir a tela (o "casco" do app) mesmo sem internet.
 // Os dados em si continuam vindo do Firestore, exigem conexão.
-const CACHE_NAME = 'bussola-gastos-v1';
-const SHELL_FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+const CACHE_NAME = 'banca-v2';
+const SHELL_FILES = ['./', './index.html', './manifest.json?v=2', './icon-192.png?v=2', './icon-512.png?v=2'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
