@@ -7,7 +7,12 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Bússola Gastos">
 <meta name="theme-color" content="#090B12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="Controle financeiro pessoal — gastos, entradas e saldo, sincronizado na nuvem.">
 <title>Bússola Gastos</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -372,6 +377,40 @@
     font-family:'JetBrains Mono',monospace;font-size:10.5px;border-radius:8px;padding:6px 10px;cursor:pointer;flex-shrink:0;
   }
   .logout-btn:hover{border-color:var(--neg);color:var(--neg);}
+
+  /* instalar app */
+  .install-btn-auth{width:100%;margin-bottom:14px;padding:11px;font-size:13.5px;}
+  .install-hint-auth{
+    font-size:12px;color:rgba(242,245,250,0.55);text-align:center;
+    margin:-6px 0 14px;line-height:1.5;
+  }
+  .install-banner{
+    position:fixed;left:14px;right:14px;bottom:14px;z-index:20;
+    max-width:520px;margin:0 auto;
+    display:flex;align-items:center;gap:12px;
+    background:rgba(18,21,31,0.92);
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border:1px solid rgba(77,212,255,0.3);border-radius:16px;
+    padding:12px 14px;
+    box-shadow:0 10px 30px -8px rgba(0,0,0,0.6);
+    animation:installBannerIn .35s cubic-bezier(.22,1,.36,1);
+  }
+  @keyframes installBannerIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+  .install-banner-icon{font-size:24px;flex-shrink:0;}
+  .install-banner-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+  .install-banner-text strong{font-size:13px;color:var(--parchment);}
+  .install-banner-text span{font-size:11.5px;color:rgba(242,245,250,0.55);line-height:1.4;}
+  .install-banner .btn{flex-shrink:0;padding:8px 14px;font-size:12.5px;}
+  .install-banner-close{
+    background:none;border:none;color:rgba(242,245,250,0.35);cursor:pointer;
+    font-size:18px;line-height:1;padding:2px 4px;flex-shrink:0;
+  }
+  .install-banner-close:hover{color:var(--neg);}
+  @media (max-width:479px){
+    .install-banner{flex-wrap:wrap;}
+    .install-banner-text{order:1;width:calc(100% - 40px);}
+    .install-banner .btn{order:3;margin-left:36px;}
+  }
 </style>
 </head>
 <body>
@@ -381,6 +420,12 @@
   <div class="auth-card">
     <span class="eyebrow">Controle financeiro</span>
     <h1>Bússola Gastos</h1>
+
+    <button class="btn secondary install-btn-auth" id="installBtnAuth" style="display:none;">
+      📲 Instalar app no seu aparelho
+    </button>
+    <p class="install-hint-auth" id="installHintAuth" style="display:none;"></p>
+
     <div class="auth-divider" style="margin-top:4px;"></div>
 
     <div id="authFields">
@@ -558,6 +603,17 @@
 </div>
 </div>
 
+<!-- ===== AVISO PARA INSTALAR O APP ===== -->
+<div id="installBanner" class="install-banner" style="display:none;">
+  <span class="install-banner-icon">📲</span>
+  <div class="install-banner-text">
+    <strong>Instalar o Bússola Gastos</strong>
+    <span id="installBannerSub">Acesso rápido direto da tela inicial, como um app.</span>
+  </div>
+  <button class="btn" id="installBtn">Instalar</button>
+  <button class="install-banner-close" id="installBannerClose" aria-label="Fechar aviso">×</button>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -714,10 +770,114 @@ document.getElementById('logoutBtn').addEventListener('click', ()=>{
   signOut(auth);
 });
 
+/* ---------- instalar como app (PWA) ---------- */
+const DISMISS_KEY = 'bussola-install-dismissed-em';
+const DISMISS_DIAS = 14;
+
+function jaEstaInstalado(){
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function foiDispensadoRecentemente(){
+  const ts = Number(localStorage.getItem(DISMISS_KEY) || 0);
+  if(!ts) return false;
+  const dias = (Date.now() - ts) / 86400000;
+  return dias < DISMISS_DIAS;
+}
+
+let deferredInstallPrompt = null;
+let installMode = null; // 'prompt' (Chrome/Android/desktop) | 'ios' (dica manual) | null
+
+const DICA_IOS = 'No iPhone: toque em Compartilhar (□↑) → "Adicionar à Tela de Início" para instalar.';
+
+function telaAtual(){
+  return document.getElementById('screenApp').style.display !== 'none' ? 'app' : 'auth';
+}
+
+function syncInstallUI(){
+  const banner = document.getElementById('installBanner');
+  const authBtn = document.getElementById('installBtnAuth');
+  const authHint = document.getElementById('installHintAuth');
+
+  // esconde tudo primeiro, depois liga só o que faz sentido pra tela atual
+  banner.style.display = 'none';
+  authBtn.style.display = 'none';
+  authHint.style.display = 'none';
+
+  if(!installMode || jaEstaInstalado() || foiDispensadoRecentemente()) return;
+
+  const naTelaDeLogin = telaAtual() === 'auth';
+
+  if(installMode === 'prompt'){
+    if(naTelaDeLogin){
+      authBtn.style.display = 'block';
+    }else{
+      document.getElementById('installBtn').style.display = 'inline-flex';
+      document.getElementById('installBannerSub').textContent = 'Acesso rápido direto da tela inicial, como um app.';
+      banner.style.display = 'flex';
+    }
+  }else if(installMode === 'ios'){
+    if(naTelaDeLogin){
+      authHint.textContent = '📲 ' + DICA_IOS;
+      authHint.style.display = 'block';
+    }else{
+      document.getElementById('installBtn').style.display = 'none';
+      document.getElementById('installBannerSub').textContent = DICA_IOS;
+      banner.style.display = 'flex';
+    }
+  }
+}
+
+function esconderUIInstalar(){
+  document.getElementById('installBanner').style.display = 'none';
+  document.getElementById('installBtnAuth').style.display = 'none';
+  document.getElementById('installHintAuth').style.display = 'none';
+}
+
+async function acionarInstalacao(){
+  if(!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  const { outcome } = await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  if(outcome === 'accepted'){ installMode = null; esconderUIInstalar(); }
+}
+
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  installMode = 'prompt';
+  syncInstallUI();
+});
+
+window.addEventListener('appinstalled', ()=>{
+  deferredInstallPrompt = null;
+  installMode = null;
+  esconderUIInstalar();
+});
+
+document.getElementById('installBtn').addEventListener('click', acionarInstalacao);
+document.getElementById('installBtnAuth').addEventListener('click', acionarInstalacao);
+document.getElementById('installBannerClose').addEventListener('click', ()=>{
+  localStorage.setItem(DISMISS_KEY, String(Date.now()));
+  esconderUIInstalar();
+});
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+
+// iOS não dispara beforeinstallprompt — mostra a dica manual direto
+if(/iphone|ipad|ipod/i.test(navigator.userAgent)){
+  installMode = 'ios';
+  syncInstallUI();
+}
+
 onAuthStateChanged(auth, async (user)=>{
   if(user){
     document.getElementById('userEmailLabel').textContent = user.email || '';
     showAppScreen();
+    syncInstallUI();
     setStatus('carregando seus dados...');
     await loadStateFromCloud(user.uid);
     document.getElementById('fData').value = isoDate(new Date());
@@ -728,6 +888,7 @@ onAuthStateChanged(auth, async (user)=>{
     setAuthMsg('');
     document.getElementById('authPassword').value = '';
     showAuthScreen();
+    syncInstallUI();
   }
 });
 
