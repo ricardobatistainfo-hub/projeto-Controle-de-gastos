@@ -336,6 +336,12 @@
   }
 
   footer.app-footer{text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(242,245,250,0.3);margin-top:26px;}
+  .footer-links{text-align:center;font-family:'JetBrains Mono',monospace;font-size:10.5px;margin-top:8px;}
+  .footer-links a{color:rgba(242,245,250,0.35);text-decoration:underline;}
+  .footer-links a:hover{color:var(--essencial);}
+  .auth-privacy-link{text-align:center;margin-top:16px;font-family:'JetBrains Mono',monospace;font-size:10.5px;}
+  .auth-privacy-link a{color:rgba(242,245,250,0.35);text-decoration:underline;}
+  .auth-privacy-link a:hover{color:var(--essencial);}
 
   :focus-visible{outline:2px solid var(--essencial);outline-offset:2px;}
 
@@ -488,6 +494,7 @@
     </div>
 
     <div class="auth-msg" id="authMsg"></div>
+    <div class="auth-privacy-link"><a href="privacidade.html" target="_blank" rel="noopener" data-i18n="privacy_link">Política de Privacidade</a></div>
   </div>
 </div>
 
@@ -638,6 +645,7 @@
   <button class="fab" id="fabAdd" aria-label="Adicionar gasto">+</button>
 
   <footer class="app-footer" data-i18n="footer_saved">salvo automaticamente na sua conta</footer>
+  <div class="footer-links"><a href="privacidade.html" target="_blank" rel="noopener" data-i18n="privacy_link">Política de Privacidade</a></div>
 </div>
 </div>
 
@@ -702,6 +710,7 @@ const I18N = {
     tagline: 'Controle financeiro',
     choose_language: 'Idioma', choose_currency: 'Moeda',
     choose_prefs_first: 'escolha o idioma e a moeda para continuar.',
+    privacy_link: 'Política de Privacidade',
     auth_email: 'E-mail', auth_password: 'Senha',
     auth_enter: 'Entrar', auth_or: 'ou', auth_google: 'Entrar com Google',
     auth_no_account: 'Ainda não tem conta?', auth_has_account: 'Já tem conta?',
@@ -749,6 +758,7 @@ const I18N = {
     tagline: 'Controllo finanziario',
     choose_language: 'Lingua', choose_currency: 'Valuta',
     choose_prefs_first: 'scegli la lingua e la valuta per continuare.',
+    privacy_link: 'Informativa sulla privacy',
     auth_email: 'E-mail', auth_password: 'Password',
     auth_enter: 'Accedi', auth_or: 'o', auth_google: 'Accedi con Google',
     auth_no_account: 'Non hai un account?', auth_has_account: 'Hai già un account?',
@@ -796,6 +806,7 @@ const I18N = {
     tagline: 'Financial control',
     choose_language: 'Language', choose_currency: 'Currency',
     choose_prefs_first: 'choose language and currency to continue.',
+    privacy_link: 'Privacy Policy',
     auth_email: 'Email', auth_password: 'Password',
     auth_enter: 'Sign in', auth_or: 'or', auth_google: 'Sign in with Google',
     auth_no_account: "Don't have an account?", auth_has_account: 'Already have an account?',
