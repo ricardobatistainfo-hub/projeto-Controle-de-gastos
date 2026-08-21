@@ -1784,10 +1784,11 @@ function aplicarPrefsNaTela(){
   document.getElementById('dayListHeading').textContent = catPeriod==='mes' ? t('entries_month') : t('entries_week');
   document.getElementById('tabTitle').textContent = tabTitleFor(currentTab);
   renderGreeting();
-  // a dica só muda pro caminho do teclado quando a voz realmente não existe
-  // nesse aparelho (iOS sem a API) — fora isso, sempre tenta o microfone
-  // de verdade primeiro, então a dica de exemplo padrão continua valendo
-  if(ehIOS() && !(window.SpeechRecognition || window.webkitSpeechRecognition)){
+  // a dica muda pro caminho do teclado quando a voz não vai funcionar mesmo:
+  // API ausente, ou app instalado no iOS (confirmado que não funciona nesse
+  // modo) — no Safari normal, onde a voz funciona, a dica de exemplo padrão
+  // continua valendo
+  if(ehIOS() && (!(window.SpeechRecognition || window.webkitSpeechRecognition) || emStandalone())){
     const hint = document.getElementById('voiceHint');
     if(hint) hint.textContent = t('voice_ios_hint');
   }
@@ -2615,7 +2616,6 @@ function setVozMsg(msg, kind){
 }
 
 let reconhecimento = null;
-let iniciandoVoz = false;   // trava contra duplo toque durante a espera do microfone (iOS)
 let ouvindo = false;
 
 function aplicarFala(texto){
@@ -2695,15 +2695,30 @@ function ehIOS(){
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 }
 
-/* mostra a orientação do ditado nativo do teclado — só usada quando o
-   aparelho realmente não tem a API de reconhecimento de voz nenhuma */
+/* app instalado na tela de início (aberto fora do Safari) */
+function emStandalone(){
+  try{
+    return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  }catch(e){ return false; }
+}
+
+/* mostra a orientação do ditado nativo do teclado — usada quando o aparelho
+   não tem a API de voz, ou quando tem mas está confirmado que não funciona
+   nesse modo (app instalado no iOS) */
 function orientarDitadoNativo(){
   setVozMsg(t('voice_ios_hint'));
   const campo = document.getElementById('fDescricao');
   if(campo) campo.focus();
 }
 
-async function iniciarVoz(){
+/* app instalado na tela de início do iOS: a API de reconhecimento existe e
+   até chega a "escutar", mas o motor encerra sozinho sem nunca captar nada
+   — confirmado testando no aparelho, com o código do erro exposto na tela.
+   É uma limitação do WebKit nesse modo específico (sem solução por código:
+   já foram tentados os dois contornos conhecidos, sem efeito). Em vez de
+   deixar a pessoa apertar e sempre falhar, vai direto pro caminho que
+   funciona de verdade: o ditado nativo do teclado do próprio iOS. */
+function iniciarVoz(){
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SR){
     if(ehIOS()) orientarDitadoNativo();
@@ -2714,24 +2729,9 @@ async function iniciarVoz(){
     finalizarEscuta();   // tocar de novo encerra e já lança o que foi entendido
     return;
   }
-  if(iniciandoVoz) return;   // já está no meio da preparação, ignora o toque repetido
-
-  // no iOS o reconhecimento às vezes começa e morre na hora, porque a sessão
-  // de áudio nunca chega a "esquentar" antes da API de voz tentar usá-la —
-  // pedir o microfone puro primeiro resolve isso na maioria dos casos, mas
-  // o fluxo é solto logo em seguida: mantê-lo aberto ao mesmo tempo que o
-  // reconhecimento gera dois consumidores de microfone simultâneos, o que
-  // no modo instalado do iOS causa outro tipo de falha (ícone diferente,
-  // reconhecimento nunca produz resultado)
-  if(ehIOS() && navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
-    iniciandoVoz = true;
-    try{
-      const streamAquecimento = await navigator.mediaDevices.getUserMedia({audio:true});
-      streamAquecimento.getTracks().forEach(tr => tr.stop());   // só "esquenta", não segura
-    }catch(e){
-      // segue tentando a voz mesmo assim
-    }
-    iniciandoVoz = false;
+  if(ehIOS() && emStandalone()){
+    orientarDitadoNativo();
+    return;
   }
 
   vozUltimoTexto = '';
