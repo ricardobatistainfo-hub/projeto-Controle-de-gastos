@@ -711,36 +711,6 @@
   .cal-cell .dot{width:4px;height:4px;border-radius:50%;background:#3DE8B0;margin-top:1px;}
   .cal-cell.selected .dot{background:var(--ink);}
 
-  /* ---------- ditar o lançamento ---------- */
-  .voice-panel{border-color:rgba(185,140,255,0.28);}
-  .voice-btn{
-    width:100%;display:flex;align-items:center;justify-content:center;gap:10px;
-    background:linear-gradient(135deg, rgba(185,140,255,0.18), rgba(77,212,255,0.12));
-    border:1px solid rgba(185,140,255,0.45);color:var(--parchment);
-    font-family:'Inter',sans-serif;font-size:15px;font-weight:600;
-    border-radius:12px;padding:14px;cursor:pointer;
-    transition:transform .15s ease, border-color .2s ease, box-shadow .2s ease;
-  }
-  .voice-btn .voice-mic{font-size:20px;line-height:1;}
-  .voice-btn:active{transform:scale(0.97);}
-  .voice-btn:hover{border-color:var(--violeta);box-shadow:0 0 20px -6px rgba(185,140,255,0.7);}
-  .voice-btn.listening{
-    border-color:var(--neg);color:#FFD9E2;
-    background:linear-gradient(135deg, rgba(255,92,122,0.22), rgba(255,92,122,0.08));
-    animation:voicePulse 1.4s ease-in-out infinite;
-  }
-  @keyframes voicePulse{
-    0%,100%{box-shadow:0 0 0 0 rgba(255,92,122,0.35);}
-    50%{box-shadow:0 0 0 10px rgba(255,92,122,0);}
-  }
-  .voice-hint{font-size:11.5px;color:rgba(242,245,250,0.4);text-align:center;margin-top:9px;line-height:1.5;}
-  .voice-transcript{
-    font-size:13px;color:rgba(242,245,250,0.8);text-align:center;margin-top:10px;min-height:18px;
-    font-style:italic;
-  }
-  .voice-transcript.err{color:#FF8CA3;font-style:normal;}
-  .voice-transcript.ok{color:var(--pos);font-style:normal;}
-
   /* dentro do app a barra inferior ocupa o rodapé da tela — o aviso sobe acima dela */
   body.app-mode .install-banner{bottom:calc(var(--tabbar-h) + var(--safe-b) + 20px);}
 
@@ -1043,16 +1013,6 @@
       <button class="ptbtn" data-type="entrada" data-i18n="income_type">Entrada</button>
     </div>
 
-    <div class="panel voice-panel" id="voicePanel">
-      <h2><span class="live-dot"></span> <span data-i18n="voice_title">Falar o lançamento</span></h2>
-      <button class="voice-btn" id="voiceBtn" type="button">
-        <span class="voice-mic" aria-hidden="true">🎤</span>
-        <span data-i18n="voice_btn">Falar</span>
-      </button>
-      <div class="voice-hint" id="voiceHint" data-i18n="voice_hint">Ex: "gastei 12 euros no mercado com cartão"</div>
-      <div class="voice-transcript" id="voiceTranscript"></div>
-    </div>
-
     <button class="cat-toggle" id="catToggleBtn" type="button" aria-expanded="false" aria-controls="catPanel">
       <span class="ct-sign">+</span>
       <span class="ct-text" data-i18n="manage_categories">gerir categorias</span>
@@ -1097,6 +1057,16 @@
         </div>
       </div>
       <div class="auth-msg" id="addMsg"></div>
+    </div>
+
+    <button class="cat-toggle" id="recentToggleBtn" type="button" aria-expanded="false" aria-controls="recentPanel">
+      <span class="ct-sign">+</span>
+      <span class="ct-text" data-i18n="recent_entries">lançamentos</span>
+      <span class="ct-count" id="recentCount">0</span>
+    </button>
+
+    <div class="panel" id="recentPanel" hidden>
+      <div id="recentListArea"></div>
     </div>
   </div>
   </section>
@@ -1509,20 +1479,10 @@ const I18N = {
     export_period_label: 'Período', export_period_all: 'Tudo', export_period_month: 'Este mês',
     export_period_year: 'Este ano', export_period_custom: 'Período personalizado',
     export_from: 'De', export_to: 'Até', export_type_label: 'Lançamentos',
-    voice_title: 'Falar o lançamento', voice_btn: 'Falar',
-    voice_hint: 'Ex: "gastei 12 euros no mercado com cartão"',
-    voice_listening: 'ouvindo... pode falar', voice_reading: 'entendendo...',
-    voice_unsupported: 'este navegador não reconhece voz — use o Chrome ou o Safari.',
-    voice_ios_hint: 'no iPhone/iPad, toque no campo de descrição abaixo e use o microfone do teclado pra ditar.',
-    voice_denied: 'permissão de microfone negada.',
-    voice_error: 'não consegui ouvir. tente de novo.',
-    voice_no_value: 'não entendi o valor. tente: "gastei 12 euros no mercado".',
-    voice_added: 'adicionado por voz: ',
-    voice_pick_category: 'não entendi a categoria — escolha uma abaixo.',
-    voice_pick_category_hint: 'toque numa categoria e depois em "adicionar" para lançar.',
     new_expense: 'Novo gasto', new_income: 'Nova entrada',
     expense_type: 'Saída', income_type: 'Entrada',
     categories: 'Categorias', manage_categories: 'gerir categorias',
+    recent_entries: 'ver lançamentos',
     new_category_ph: 'Nova categoria...', add: 'Adicionar',
     value_label: 'Valor', date_label: 'Data', category_label: 'Categoria',
     payment_method_label: 'Forma de pagamento', cash: 'Dinheiro', card: 'Cartão',
@@ -1535,7 +1495,7 @@ const I18N = {
     no_expenses_period: 'nenhum gasto registrado neste período ainda',
     no_income_period: 'nenhuma entrada registrada neste período ainda',
     no_entries_week: 'nenhum lançamento nesta semana ainda',
-    no_description: '(sem descrição)', categ_singular: 'CATEG.', categ_plural: 'CATEGS.',
+    no_description: '(sem descrição)', categ_singular: 'CATEGORIA', categ_plural: 'CATEGORIAS',
     edit_balance_title: 'Editar saldo',
     loading_data: 'carregando seus dados...', loaded_data: 'dados carregados da sua conta',
     new_account: 'conta nova — nenhum dado salvo ainda',
@@ -1592,20 +1552,10 @@ const I18N = {
     export_period_label: 'Periodo', export_period_all: 'Tutto', export_period_month: 'Questo mese',
     export_period_year: 'Quest\'anno', export_period_custom: 'Periodo personalizzato',
     export_from: 'Da', export_to: 'A', export_type_label: 'Movimenti',
-    voice_title: 'Detta il movimento', voice_btn: 'Parla',
-    voice_hint: 'Es: "ho speso 12 euro al supermercato con carta"',
-    voice_listening: 'in ascolto... parla pure', voice_reading: 'sto capendo...',
-    voice_unsupported: 'questo browser non riconosce la voce — usa Chrome o Safari.',
-    voice_ios_hint: 'su iPhone/iPad, tocca il campo descrizione qui sotto e usa il microfono della tastiera per dettare.',
-    voice_denied: 'permesso microfono negato.',
-    voice_error: 'non sono riuscito a sentire. riprova.',
-    voice_no_value: 'non ho capito l\'importo. prova: "ho speso 12 euro al supermercato".',
-    voice_added: 'aggiunto con la voce: ',
-    voice_pick_category: 'non ho capito la categoria — scegline una qui sotto.',
-    voice_pick_category_hint: 'tocca una categoria e poi "aggiungi" per registrare.',
     new_expense: 'Nuova spesa', new_income: 'Nuova entrata',
     expense_type: 'Uscita', income_type: 'Entrata',
     categories: 'Categorie', manage_categories: 'gestisci categorie',
+    recent_entries: 'vedi movimenti',
     new_category_ph: 'Nuova categoria...', add: 'Aggiungi',
     value_label: 'Importo', date_label: 'Data', category_label: 'Categoria',
     payment_method_label: 'Metodo di pagamento', cash: 'Contanti', card: 'Carta',
@@ -1618,7 +1568,7 @@ const I18N = {
     no_expenses_period: 'nessuna spesa registrata in questo periodo',
     no_income_period: 'nessuna entrata registrata in questo periodo',
     no_entries_week: 'nessun movimento questa settimana',
-    no_description: '(senza descrizione)', categ_singular: 'CAT.', categ_plural: 'CAT.',
+    no_description: '(senza descrizione)', categ_singular: 'CATEGORIA', categ_plural: 'CATEGORIE',
     edit_balance_title: 'Modifica saldo',
     loading_data: 'caricamento dei tuoi dati...', loaded_data: 'dati caricati dal tuo account',
     new_account: 'nuovo account — nessun dato salvato ancora',
@@ -1674,21 +1624,11 @@ const I18N = {
     export_period_label: 'Period', export_period_all: 'All', export_period_month: 'This month',
     export_period_year: 'This year', export_period_custom: 'Custom period',
     export_from: 'From', export_to: 'To', export_type_label: 'Entries',
-    export_empty: 'no entries to export yet.',
-    voice_title: 'Say the entry', voice_btn: 'Speak',
-    voice_hint: 'E.g. "spent 12 euros at the market with card"',
-    voice_listening: 'listening... go ahead', voice_reading: 'figuring it out...',
-    voice_unsupported: 'this browser does not support speech — try Chrome or Safari.',
-    voice_ios_hint: 'on iPhone/iPad, tap the description field below and use the keyboard mic to dictate.',
-    voice_denied: 'microphone permission denied.',
-    voice_error: 'could not hear you. try again.',
-    voice_no_value: 'I did not catch the amount. try: "spent 12 euros at the market".',
-    voice_added: 'added by voice: ',
-    voice_pick_category: "didn't catch the category — pick one below.",
-    voice_pick_category_hint: 'tap a category, then "add" to save it.',
     new_expense: 'New expense', new_income: 'New income',
+    export_empty: 'no entries to export yet.',
     expense_type: 'Expense', income_type: 'Income',
     categories: 'Categories', manage_categories: 'manage categories',
+    recent_entries: 'view entries',
     new_category_ph: 'New category...', add: 'Add',
     value_label: 'Amount', date_label: 'Date', category_label: 'Category',
     payment_method_label: 'Payment method', cash: 'Cash', card: 'Card',
@@ -1701,7 +1641,7 @@ const I18N = {
     no_expenses_period: 'no expenses recorded this period yet',
     no_income_period: 'no income recorded this period yet',
     no_entries_week: 'no entries this week yet',
-    no_description: '(no description)', categ_singular: 'CAT.', categ_plural: 'CATS.',
+    no_description: '(no description)', categ_singular: 'CATEGORY', categ_plural: 'CATEGORIES',
     edit_balance_title: 'Edit balance',
     loading_data: 'loading your data...', loaded_data: 'data loaded from your account',
     new_account: 'new account — no data saved yet',
@@ -1784,14 +1724,6 @@ function aplicarPrefsNaTela(){
   document.getElementById('dayListHeading').textContent = catPeriod==='mes' ? t('entries_month') : t('entries_week');
   document.getElementById('tabTitle').textContent = tabTitleFor(currentTab);
   renderGreeting();
-  // a dica muda pro caminho do teclado quando a voz não vai funcionar mesmo:
-  // API ausente, ou app instalado no iOS (confirmado que não funciona nesse
-  // modo) — no Safari normal, onde a voz funciona, a dica de exemplo padrão
-  // continua valendo
-  if(ehIOS() && (!(window.SpeechRecognition || window.webkitSpeechRecognition) || emStandalone())){
-    const hint = document.getElementById('voiceHint');
-    if(hint) hint.textContent = t('voice_ios_hint');
-  }
 
   if(installMode) syncInstallUI();
   if(userDocRef) renderAll();
@@ -2429,6 +2361,13 @@ function abrirCategorias(abrir){
   if(abrir) document.getElementById('newCatInput').focus();
 }
 
+let recentesAbertos = false;
+function abrirRecentes(abrir){
+  recentesAbertos = abrir;
+  document.getElementById('recentPanel').hidden = !abrir;
+  document.getElementById('recentToggleBtn').setAttribute('aria-expanded', String(abrir));
+}
+
 /* grava o lançamento (usado tanto pelo botão quanto pelo ditado por voz) */
 function registrarLancamento({valor, data, categoriaId, pagamento, descricao, tipo}){
   const record = {
@@ -2471,325 +2410,6 @@ document.querySelectorAll('#typeToggle .ptbtn').forEach(btn=>{
     if(currentTab==='add') document.getElementById('tabTitle').textContent = tabTitleFor('add');
   });
 });
-
-/* ======================================================================
-   DITAR O LANÇAMENTO
-   "gastei 12 euros no mercado com cartão" → valor, categoria, pagamento,
-   data e descrição preenchidos e o gasto já lançado.
-   ====================================================================== */
-const VOZ_ENTRADA = ['recebi','recebido','entrou','entrada','salario','ganhei','ricevuto','entrata','stipendio','guadagnato','received','income','salary','earned','paid me','deposito','deposit'];
-const VOZ_CARTAO  = ['cartao','carta','card','credito','debito','credit','debit','bancomat'];
-const VOZ_DINHEIRO= ['dinheiro','especie','contanti','contante','cash'];
-const VOZ_ONTEM   = ['ontem','ieri','yesterday'];
-const VOZ_ANTEONTEM = ['anteontem','altro ieri','laltro ieri'];
-const VOZ_HOJE    = ['hoje','oggi','today'];
-const VOZ_COMANDO = ['gastei','gasto','gastos','paguei','pago','comprei','compra','ho speso','speso','pagato','comprato','spent','paid','bought','recebi','recebido','ricevuto','received','entrou','ganhei','guadagnato','earned'];
-const VOZ_PREPOS  = ['de','do','da','no','na','em','com','foi','um','uma','o','a','al','alla','allo','in','con','del','della','at','the','with','on','for','of','e','and','y'];
-const VOZ_MOEDA   = ['reais','real','euros','euro','dolares','dolar','dollars','dollar','bucks','centavos','centesimi','cents'];
-
-// tudo que é comando, moeda ou marcação de tempo/pagamento sai da descrição
-const VOZ_RUIDO = new Set(
-  []
-    .concat(VOZ_COMANDO, VOZ_MOEDA, VOZ_PREPOS, VOZ_CARTAO, VOZ_DINHEIRO, VOZ_ONTEM, VOZ_ANTEONTEM, VOZ_HOJE)
-    .join(' ').split(' ')
-);
-
-// remove os acentos (marcas de combinação U+0300–U+036F) para comparar palavras
-const RE_ACENTOS = new RegExp('[\\u0300-\\u036f]', 'g');
-function normalizarVoz(s){
-  return (s||'').toLowerCase().normalize('NFD').replace(RE_ACENTOS, '');
-}
-function contemAlguma(txt, lista){
-  return lista.some(p => txt.includes(p));
-}
-
-/* distância de edição (Levenshtein) entre duas palavras curtas — mede
-   quantas letras precisam mudar pra uma virar a outra */
-function distanciaEdicao(a, b){
-  const m = a.length, n = b.length;
-  const linha = new Array(n+1);
-  for(let j=0;j<=n;j++) linha[j] = j;
-  for(let i=1;i<=m;i++){
-    let anterior = linha[0];
-    linha[0] = i;
-    for(let j=1;j<=n;j++){
-      const temp = linha[j];
-      linha[j] = a[i-1]===b[j-1] ? anterior : 1 + Math.min(anterior, linha[j], linha[j-1]);
-      anterior = temp;
-    }
-  }
-  return linha[n];
-}
-
-/* quando nenhuma categoria bate letra por letra, procura a mais parecida —
-   tolera diferenças pequenas de grafia entre idiomas (café/caffè, mercado/mercato) */
-function categoriaPorAproximacao(txt){
-  const palavrasFala = txt.split(/\s+/).filter(w => w.length >= 3);
-  if(!palavrasFala.length) return null;
-
-  let melhorCat = null, melhorDist = Infinity;
-  for(const c of state.categories){
-    const palavrasCat = normalizarVoz(c.label).split(/\s+/).filter(w => w.length >= 3);
-    if(!palavrasCat.length) continue;
-
-    let distTotal = 0, todasBateram = true;
-    for(const pc of palavrasCat){
-      let melhorPc = Infinity;
-      for(const pf of palavrasFala){
-        if(Math.abs(pf.length - pc.length) > 2) continue;   // tamanhos muito diferentes não valem a pena comparar
-        const d = distanciaEdicao(pc, pf);
-        if(d < melhorPc) melhorPc = d;
-      }
-      const tolerancia = pc.length <= 4 ? 1 : (pc.length <= 7 ? 2 : 3);
-      if(melhorPc > tolerancia){ todasBateram = false; break; }
-      distTotal += melhorPc;
-    }
-    if(todasBateram && distTotal < melhorDist){ melhorDist = distTotal; melhorCat = c; }
-  }
-  return melhorCat ? melhorCat.id : null;
-}
-
-/* valor falado: cobre tanto "11,45"/"11.45" (decimal já pontuado pelo próprio
-   reconhecimento) quanto o jeito comum de falar preço em pt/it/en, separando
-   a parte inteira dos centavos com uma conjunção — "onze e quarenta e cinco",
-   "undici e quarantacinque", "11 and 45" — que o reconhecimento normalmente
-   transcreve como dois números soltos ligados por "e"/"and", sem vírgula */
-function extrairValorFala(txt){
-  let m = txt.match(/(\d+)[.,](\d{1,2})\b/);
-  if(m) return parseFloat(m[1] + '.' + m[2]);
-
-  // a palavra da moeda pode aparecer entre as duas partes: "7 euro e 5", "20 reais e 50"
-  m = txt.match(/(\d+)\s+(?:euros?|reais?|real|dollars?|bucks?)?\s*(?:e|and|y)\s+(\d{1,2})\b/);
-  if(m) return parseFloat(m[1] + '.' + m[2]);
-
-  m = txt.match(/\d+/);
-  return m ? parseFloat(m[0]) : null;
-}
-
-function interpretarFala(textoOriginal){
-  const txt = normalizarVoz(textoOriginal);
-
-  const valor = extrairValorFala(txt);
-
-  const tipo = contemAlguma(txt, VOZ_ENTRADA) ? 'entrada' : 'saida';
-
-  let pagamento = null;
-  if(contemAlguma(txt, VOZ_CARTAO)) pagamento = 'Cartão';
-  else if(contemAlguma(txt, VOZ_DINHEIRO)) pagamento = 'Dinheiro';
-
-  const hoje = new Date();
-  let data = new Date(hoje);
-  if(contemAlguma(txt, VOZ_ANTEONTEM)) data.setDate(data.getDate()-2);
-  else if(contemAlguma(txt, VOZ_ONTEM)) data.setDate(data.getDate()-1);
-
-  // categoria: primeiro tenta achar o nome exato dentro da frase; se não achar,
-  // tenta uma comparação tolerante a pequenas diferenças de grafia — o app é
-  // trilíngue e o reconhecimento de voz segue o idioma da tela (ex: "café" dito
-  // como "caffè" em italiano, ou "mercado" reconhecido como "mercato")
-  let categoriaId = null;
-  const porTamanho = [...state.categories].sort((a,b)=> b.label.length - a.label.length);
-  for(const c of porTamanho){
-    const alvo = normalizarVoz(c.label);
-    if(alvo && txt.includes(alvo)){ categoriaId = c.id; break; }
-  }
-  if(!categoriaId) categoriaId = categoriaPorAproximacao(txt);
-
-  // descrição: a frase sem o valor, a moeda e os verbos de comando —
-  // filtrada palavra a palavra para não perder os acentos do que a pessoa falou
-  let desc = textoOriginal.trim().split(/\s+/).filter(palavra=>{
-    const p = normalizarVoz(palavra).replace(/[^a-z0-9]/g,'');
-    if(!p) return false;
-    if(/^\d+([.,]\d{1,2})?$/.test(p)) return false;
-    return !VOZ_RUIDO.has(p);
-  }).join(' ').trim();
-  if(desc.length < 2) desc = textoOriginal.trim();
-  desc = desc.charAt(0).toUpperCase() + desc.slice(1);
-
-  return {valor, tipo, pagamento, data: isoDate(data), categoriaId, descricao: desc};
-}
-
-function setVozMsg(msg, kind){
-  const el = document.getElementById('voiceTranscript');
-  if(!el) return;
-  el.textContent = msg || '';
-  el.className = 'voice-transcript' + (kind ? ' ' + kind : '');
-}
-
-let reconhecimento = null;
-let ouvindo = false;
-
-function aplicarFala(texto){
-  setVozMsg('“' + texto + '”');
-  const p = interpretarFala(texto);
-
-  // reflete no formulário o que foi entendido, para dar para conferir/corrigir
-  if(p.tipo !== addType){
-    const btn = document.querySelector(`#typeToggle .ptbtn[data-type="${p.tipo}"]`);
-    if(btn) btn.click();
-  }
-  if(p.valor) document.getElementById('fValor').value = p.valor;
-  document.getElementById('fData').value = p.data;
-  if(p.pagamento) document.getElementById('fPagamento').value = p.pagamento;
-  document.getElementById('fDescricao').value = p.descricao;
-
-  if(!p.valor || p.valor<=0){
-    setVozMsg(t('voice_no_value'), 'err');
-    return;
-  }
-
-  // a categoria só é definida se a fala citou o nome de uma que já existe —
-  // sem isso não lança sozinho: o formulário fica pronto, mas com a categoria
-  // em branco, pedindo pra pessoa escolher e confirmar (nunca reaproveita o
-  // que já estava selecionado ali antes, senão tudo cai sempre na mesma)
-  if(!p.categoriaId){
-    document.getElementById('fCategoria').selectedIndex = -1;
-    setVozMsg(t('voice_pick_category'), 'err');
-    setAddMsg('⚠️ ' + t('voice_pick_category_hint'), true);
-    document.getElementById('fCategoria').focus();
-    return;
-  }
-  document.getElementById('fCategoria').value = p.categoriaId;
-
-  registrarLancamento({
-    valor: p.valor, data: p.data, categoriaId: p.categoriaId,
-    pagamento: document.getElementById('fPagamento').value,
-    descricao: p.descricao, tipo: p.tipo
-  });
-  setVozMsg(t('voice_added') + p.descricao + ' · ' + fmtMoney(p.valor), 'ok');
-  try{ navigator.vibrate && navigator.vibrate([12,60,12]); }catch(e){}
-}
-
-// com continuous:false o navegador corta a escuta na primeira pausa curta
-// (~1-2s) da fala; para dar mais tempo, escutamos em modo contínuo e só
-// encerramos por uma pausa mais longa entre frases ou por um limite de segurança
-const VOZ_PAUSA_MS = 3200;   // silêncio entre frases que conta como "terminei de falar"
-const VOZ_MAX_MS = 25000;    // teto de segurança para não escutar pra sempre
-let vozUltimoTexto = '';
-let vozTimerPausa = null;
-let vozTimerMax = null;
-
-function limparTimersVoz(){
-  clearTimeout(vozTimerPausa); vozTimerPausa = null;
-  clearTimeout(vozTimerMax); vozTimerMax = null;
-}
-
-function pararDeOuvir(){
-  ouvindo = false;
-  limparTimersVoz();
-  document.getElementById('voiceBtn').classList.remove('listening');
-}
-
-function finalizarEscuta(){
-  if(!ouvindo) return;
-  try{ reconhecimento.stop(); }catch(e){}
-  pararDeOuvir();
-  if(vozUltimoTexto.trim()) aplicarFala(vozUltimoTexto.trim());
-}
-
-/* iPhone/iPad: nenhum navegador tem a API de reconhecimento de voz aí, porque
-   todos rodam sobre o motor do Safari por baixo (até o Chrome no iOS) — não é
-   uma questão de trocar de navegador. O caminho que funciona de verdade é o
-   ditado nativo do teclado do próprio iOS (o ícone de microfone do teclado). */
-function ehIOS(){
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-}
-
-/* app instalado na tela de início (aberto fora do Safari) */
-function emStandalone(){
-  try{
-    return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-  }catch(e){ return false; }
-}
-
-/* mostra a orientação do ditado nativo do teclado — usada quando o aparelho
-   não tem a API de voz, ou quando tem mas está confirmado que não funciona
-   nesse modo (app instalado no iOS) */
-function orientarDitadoNativo(){
-  setVozMsg(t('voice_ios_hint'));
-  const campo = document.getElementById('fDescricao');
-  if(campo) campo.focus();
-}
-
-/* app instalado na tela de início do iOS: a API de reconhecimento existe e
-   até chega a "escutar", mas o motor encerra sozinho sem nunca captar nada
-   — confirmado testando no aparelho, com o código do erro exposto na tela.
-   É uma limitação do WebKit nesse modo específico (sem solução por código:
-   já foram tentados os dois contornos conhecidos, sem efeito). Em vez de
-   deixar a pessoa apertar e sempre falhar, vai direto pro caminho que
-   funciona de verdade: o ditado nativo do teclado do próprio iOS. */
-function iniciarVoz(){
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SR){
-    if(ehIOS()) orientarDitadoNativo();
-    else setVozMsg(t('voice_unsupported'), 'err');
-    return;
-  }
-  if(ouvindo){
-    finalizarEscuta();   // tocar de novo encerra e já lança o que foi entendido
-    return;
-  }
-  if(ehIOS() && emStandalone()){
-    orientarDitadoNativo();
-    return;
-  }
-
-  vozUltimoTexto = '';
-  reconhecimento = new SR();
-  reconhecimento.lang = localeTag();
-  reconhecimento.interimResults = true;
-  reconhecimento.maxAlternatives = 1;
-  reconhecimento.continuous = true;   // não corta no primeiro silêncio — dá mais segundos pra falar
-
-  reconhecimento.onstart = ()=>{
-    ouvindo = true;
-    document.getElementById('voiceBtn').classList.add('listening');
-    setVozMsg(t('voice_listening'));
-    setAddMsg('');
-    vozTimerMax = setTimeout(finalizarEscuta, VOZ_MAX_MS);
-  };
-  reconhecimento.onresult = (ev)=>{
-    let texto = '';
-    for(let i=0;i<ev.results.length;i++) texto += ev.results[i][0].transcript;
-    texto = texto.trim();
-    vozUltimoTexto = texto;
-    setVozMsg('“' + texto + '”');
-
-    // cada novo trecho reinicia a contagem de pausa — só encerra quando
-    // a pessoa realmente parou de falar por um tempo
-    clearTimeout(vozTimerPausa);
-    vozTimerPausa = setTimeout(finalizarEscuta, VOZ_PAUSA_MS);
-  };
-  reconhecimento.onerror = (ev)=>{
-    // mostra o código técnico do erro na tela — sem conseguir ver o console
-    // do aparelho, isso é o jeito de descobrir o motivo real de uma falha
-    const cod = ' [erro: ' + ev.error + ']';
-    if(ev.error === 'not-allowed' || ev.error === 'service-not-allowed' || ev.error === 'audio-capture'){
-      pararDeOuvir();
-      setVozMsg(t('voice_denied') + cod, 'err');
-    }else if(ev.error === 'no-speech'){
-      // silêncio no início: deixa o próprio timer de pausa/limite decidir, não corta na hora
-      setVozMsg(t('voice_listening') + cod);
-    }else if(ev.error !== 'aborted'){
-      pararDeOuvir();
-      setVozMsg(t('voice_error') + cod, 'err');
-    }else{
-      setVozMsg(t('voice_listening') + cod);
-    }
-  };
-  reconhecimento.onend = ()=>{
-    // o motor pode parar sozinho (ex: perda de conexão); aproveita o que já foi ouvido
-    if(ouvindo){
-      if(!vozUltimoTexto.trim()) setVozMsg(t('voice_error') + ' [fim sem resultado]', 'err');
-      finalizarEscuta();
-    }
-  };
-
-  try{ reconhecimento.start(); }
-  catch(e){ setVozMsg(t('voice_error') + ' [start: ' + (e && e.message || e) + ']', 'err'); pararDeOuvir(); }
-}
-
-document.getElementById('voiceBtn').addEventListener('click', iniciarVoz);
 
 /* ======================================================================
    EXPORTAR RELATÓRIO EM CSV
@@ -2998,7 +2618,47 @@ function renderAbaAtual(){
   if(aba === 'banca') renderBanca(dados);
   else if(aba === 'lancamentos') renderLancamentos(dados);
   else if(aba === 'graficos') renderGraficos(dados);
-  else if(aba === 'add') renderCategories();
+  else if(aba === 'add'){ renderCategories(); renderRecentList(); }
+}
+
+/* últimos lançamentos (saídas e entradas juntas), pra preencher a tela de
+   adicionar com algo útil — confirma na hora o que acabou de ser lançado,
+   sem precisar trocar de aba */
+function renderRecentList(){
+  const area = document.getElementById('recentListArea');
+  if(!area) return;
+
+  const todos = [
+    ...state.expenses.map(e=> ({...e, tipo:'saida'})),
+    ...state.incomes.map(e=> ({...e, tipo:'entrada'}))
+  ].sort((a,b)=> (b.criadoEm||0) - (a.criadoEm||0));
+
+  const contador = document.getElementById('recentCount');
+  if(contador) contador.textContent = todos.length;
+
+  if(!todos.length){
+    area.innerHTML = `<div class="empty-state">${t('no_entries_week')}</div>`;
+    return;
+  }
+
+  area.innerHTML = todos.map(e=>{
+    const cat = catById(e.categoriaId);
+    const cor = cat ? cat.color : '#888';
+    const catLabel = cat ? cat.label : t('no_category');
+    const entrada = e.tipo === 'entrada';
+    const sinal = entrada ? '+' : '-';
+    const corValor = entrada ? 'var(--pos)' : 'var(--neg)';
+    const dataLabel = new Date(e.data+'T12:00:00').toLocaleDateString(localeTag(),{day:'2-digit',month:'2-digit'});
+    return `<div class="expense-row" data-id="${e.id}">
+      <span class="cdot" style="background:${cor};box-shadow:0 0 6px ${cor};"></span>
+      <div class="info">
+        <div class="desc">${escapeHtml(e.descricao)}</div>
+        <div class="meta">${escapeHtml(catLabel)} · ${dataLabel}</div>
+      </div>
+      <div class="amount" style="color:${corValor};">${sinal}${fmtMoney(e.valor)}</div>
+      <button class="del" data-del="${e.id}" data-tipo="${e.tipo}">×</button>
+    </div>`;
+  }).join('');
 }
 
 function renderBanca(d){
@@ -3715,7 +3375,17 @@ function setAddMsg(msg, isError){
     renderAll();
   });
 
+  document.getElementById('recentListArea').addEventListener('click', (e)=>{
+    const btn = e.target.closest('[data-del]');
+    if(!btn) return;
+    if(btn.dataset.tipo === 'entrada') state.incomes = state.incomes.filter(x=>x.id!==btn.dataset.del);
+    else state.expenses = state.expenses.filter(x=>x.id!==btn.dataset.del);
+    saveState();
+    renderAll();
+  });
+
   document.getElementById('catToggleBtn').addEventListener('click', ()=> abrirCategorias(!categoriasAbertas));
+  document.getElementById('recentToggleBtn').addEventListener('click', ()=> abrirRecentes(!recentesAbertos));
 
   document.querySelectorAll('[data-quick]').forEach(btn=>{
     btn.addEventListener('click', ()=> abrirLancamento(btn.dataset.quick));
