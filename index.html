@@ -2722,13 +2722,6 @@ function iniciarVoz(){
     else setVozMsg(t('voice_unsupported'), 'err');
     return;
   }
-  // a API até existe, mas no app instalado do iOS o microfone costuma ser
-  // bloqueado (o reconhecimento começa e cai na hora) — vai direto pro
-  // caminho que sempre funciona em vez de piscar "ouvindo" e falhar
-  if(ehIOS() && emStandalone() && !ouvindo){
-    orientarDitadoNativo();
-    return;
-  }
   if(ouvindo){
     finalizarEscuta();   // tocar de novo encerra e já lança o que foi entendido
     return;
