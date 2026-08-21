@@ -2673,16 +2673,10 @@ function limparTimersVoz(){
   clearTimeout(vozTimerMax); vozTimerMax = null;
 }
 
-let vozMicStream = null;   // fluxo de microfone mantido aberto p/ "aquecer" a sessão de áudio no iOS
-
 function pararDeOuvir(){
   ouvindo = false;
   limparTimersVoz();
   document.getElementById('voiceBtn').classList.remove('listening');
-  if(vozMicStream){
-    vozMicStream.getTracks().forEach(tr => tr.stop());
-    vozMicStream = null;
-  }
 }
 
 function finalizarEscuta(){
@@ -2724,14 +2718,18 @@ async function iniciarVoz(){
 
   // no iOS o reconhecimento às vezes começa e morre na hora, porque a sessão
   // de áudio nunca chega a "esquentar" antes da API de voz tentar usá-la —
-  // pedir o microfone puro primeiro (e manter o fluxo aberto) resolve isso
-  // na maioria dos casos; se essa etapa falhar, ainda tenta a voz direto
+  // pedir o microfone puro primeiro resolve isso na maioria dos casos, mas
+  // o fluxo é solto logo em seguida: mantê-lo aberto ao mesmo tempo que o
+  // reconhecimento gera dois consumidores de microfone simultâneos, o que
+  // no modo instalado do iOS causa outro tipo de falha (ícone diferente,
+  // reconhecimento nunca produz resultado)
   if(ehIOS() && navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
     iniciandoVoz = true;
     try{
-      vozMicStream = await navigator.mediaDevices.getUserMedia({audio:true});
+      const streamAquecimento = await navigator.mediaDevices.getUserMedia({audio:true});
+      streamAquecimento.getTracks().forEach(tr => tr.stop());   // só "esquenta", não segura
     }catch(e){
-      vozMicStream = null;   // segue tentando a voz mesmo assim
+      // segue tentando a voz mesmo assim
     }
     iniciandoVoz = false;
   }
