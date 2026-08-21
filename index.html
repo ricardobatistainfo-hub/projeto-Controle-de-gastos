@@ -1784,11 +1784,16 @@ function aplicarPrefsNaTela(){
   document.getElementById('dayListHeading').textContent = catPeriod==='mes' ? t('entries_month') : t('entries_week');
   document.getElementById('tabTitle').textContent = tabTitleFor(currentTab);
   renderGreeting();
-  // no iPhone/iPad a dica muda: não existe reconhecimento de voz em nenhum
-  // navegador aí, então já avisamos o caminho que funciona (teclado nativo)
+  // no iPhone/iPad a dica muda só quando a voz de fato não vai funcionar:
+  // API ausente (iOS mais antigo) ou app instalado (microfone bloqueado nesse
+  // modo) — no Safari normal, quando a API existe, o reconhecimento funciona
+  // e a dica de exemplo padrão continua fazendo sentido
   if(ehIOS()){
-    const hint = document.getElementById('voiceHint');
-    if(hint) hint.textContent = t('voice_ios_hint');
+    const temApi = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+    if(!temApi || emStandalone()){
+      const hint = document.getElementById('voiceHint');
+      if(hint) hint.textContent = t('voice_ios_hint');
+    }
   }
 
   if(installMode) syncInstallUI();
@@ -2693,16 +2698,35 @@ function ehIOS(){
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 }
 
+/* app instalado na tela de início (aberto fora do Safari) — no iOS, mesmo
+   quando a API de voz existe, o microfone costuma ser bloqueado nesse modo
+   mesmo com permissão concedida: o reconhecimento começa e cai na hora */
+function emStandalone(){
+  try{
+    return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  }catch(e){ return false; }
+}
+
+/* mostra a orientação do ditado nativo do teclado (mesma dos dois casos:
+   API ausente, ou API presente mas bloqueada pelo modo instalado no iOS) */
+function orientarDitadoNativo(){
+  setVozMsg(t('voice_ios_hint'));
+  const campo = document.getElementById('fDescricao');
+  if(campo) campo.focus();
+}
+
 function iniciarVoz(){
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SR){
-    if(ehIOS()){
-      setVozMsg(t('voice_ios_hint'));
-      const campo = document.getElementById('fDescricao');
-      if(campo) campo.focus();
-    }else{
-      setVozMsg(t('voice_unsupported'), 'err');
-    }
+    if(ehIOS()) orientarDitadoNativo();
+    else setVozMsg(t('voice_unsupported'), 'err');
+    return;
+  }
+  // a API até existe, mas no app instalado do iOS o microfone costuma ser
+  // bloqueado (o reconhecimento começa e cai na hora) — vai direto pro
+  // caminho que sempre funciona em vez de piscar "ouvindo" e falhar
+  if(ehIOS() && emStandalone() && !ouvindo){
+    orientarDitadoNativo();
     return;
   }
   if(ouvindo){
@@ -2737,9 +2761,13 @@ function iniciarVoz(){
     vozTimerPausa = setTimeout(finalizarEscuta, VOZ_PAUSA_MS);
   };
   reconhecimento.onerror = (ev)=>{
-    if(ev.error === 'not-allowed' || ev.error === 'service-not-allowed'){
+    if(ev.error === 'not-allowed' || ev.error === 'service-not-allowed' || ev.error === 'audio-capture'){
       pararDeOuvir();
-      setVozMsg(t('voice_denied'), 'err');
+      // no app instalado (fora do Safari) essas falhas costumam ser o modo
+      // standalone bloqueando o microfone, não uma permissão de fato negada —
+      // "tente de novo" não resolveria, então já mostra o caminho que funciona
+      if(ehIOS() && emStandalone()) orientarDitadoNativo();
+      else setVozMsg(t('voice_denied'), 'err');
     }else if(ev.error === 'no-speech'){
       // silêncio no início: deixa o próprio timer de pausa/limite decidir, não corta na hora
     }else if(ev.error !== 'aborted'){
