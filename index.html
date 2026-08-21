@@ -1513,6 +1513,7 @@ const I18N = {
     voice_hint: 'Ex: "gastei 12 euros no mercado com cartão"',
     voice_listening: 'ouvindo... pode falar', voice_reading: 'entendendo...',
     voice_unsupported: 'este navegador não reconhece voz — use o Chrome ou o Safari.',
+    voice_ios_hint: 'no iPhone/iPad, toque no campo de descrição abaixo e use o microfone do teclado pra ditar.',
     voice_denied: 'permissão de microfone negada.',
     voice_error: 'não consegui ouvir. tente de novo.',
     voice_no_value: 'não entendi o valor. tente: "gastei 12 euros no mercado".',
@@ -1595,6 +1596,7 @@ const I18N = {
     voice_hint: 'Es: "ho speso 12 euro al supermercato con carta"',
     voice_listening: 'in ascolto... parla pure', voice_reading: 'sto capendo...',
     voice_unsupported: 'questo browser non riconosce la voce — usa Chrome o Safari.',
+    voice_ios_hint: 'su iPhone/iPad, tocca il campo descrizione qui sotto e usa il microfono della tastiera per dettare.',
     voice_denied: 'permesso microfono negato.',
     voice_error: 'non sono riuscito a sentire. riprova.',
     voice_no_value: 'non ho capito l\'importo. prova: "ho speso 12 euro al supermercato".',
@@ -1677,6 +1679,7 @@ const I18N = {
     voice_hint: 'E.g. "spent 12 euros at the market with card"',
     voice_listening: 'listening... go ahead', voice_reading: 'figuring it out...',
     voice_unsupported: 'this browser does not support speech — try Chrome or Safari.',
+    voice_ios_hint: 'on iPhone/iPad, tap the description field below and use the keyboard mic to dictate.',
     voice_denied: 'microphone permission denied.',
     voice_error: 'could not hear you. try again.',
     voice_no_value: 'I did not catch the amount. try: "spent 12 euros at the market".',
@@ -1781,6 +1784,12 @@ function aplicarPrefsNaTela(){
   document.getElementById('dayListHeading').textContent = catPeriod==='mes' ? t('entries_month') : t('entries_week');
   document.getElementById('tabTitle').textContent = tabTitleFor(currentTab);
   renderGreeting();
+  // no iPhone/iPad a dica muda: não existe reconhecimento de voz em nenhum
+  // navegador aí, então já avisamos o caminho que funciona (teclado nativo)
+  if(ehIOS()){
+    const hint = document.getElementById('voiceHint');
+    if(hint) hint.textContent = t('voice_ios_hint');
+  }
 
   if(installMode) syncInstallUI();
   if(userDocRef) renderAll();
@@ -2675,10 +2684,25 @@ function finalizarEscuta(){
   if(vozUltimoTexto.trim()) aplicarFala(vozUltimoTexto.trim());
 }
 
+/* iPhone/iPad: nenhum navegador tem a API de reconhecimento de voz aí, porque
+   todos rodam sobre o motor do Safari por baixo (até o Chrome no iOS) — não é
+   uma questão de trocar de navegador. O caminho que funciona de verdade é o
+   ditado nativo do teclado do próprio iOS (o ícone de microfone do teclado). */
+function ehIOS(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
 function iniciarVoz(){
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SR){
-    setVozMsg(t('voice_unsupported'), 'err');
+    if(ehIOS()){
+      setVozMsg(t('voice_ios_hint'));
+      const campo = document.getElementById('fDescricao');
+      if(campo) campo.focus();
+    }else{
+      setVozMsg(t('voice_unsupported'), 'err');
+    }
     return;
   }
   if(ouvindo){
