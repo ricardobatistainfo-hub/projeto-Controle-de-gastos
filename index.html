@@ -107,7 +107,9 @@
 
   .tabbar{
     position:fixed;left:12px;right:12px;
-    bottom:calc(10px + var(--safe-b));
+    /* rente à área segura, sem folga extra somada em cima (mesma lógica do
+       bussola-growth): usa o maior entre 10px mínimo e o indicador de home */
+    bottom:max(10px, var(--safe-b));
     z-index:30;
     max-width:520px;margin:0 auto;
     height:var(--tabbar-h);
