@@ -2761,23 +2761,32 @@ async function iniciarVoz(){
     vozTimerPausa = setTimeout(finalizarEscuta, VOZ_PAUSA_MS);
   };
   reconhecimento.onerror = (ev)=>{
+    // mostra o código técnico do erro na tela — sem conseguir ver o console
+    // do aparelho, isso é o jeito de descobrir o motivo real de uma falha
+    const cod = ' [erro: ' + ev.error + ']';
     if(ev.error === 'not-allowed' || ev.error === 'service-not-allowed' || ev.error === 'audio-capture'){
       pararDeOuvir();
-      setVozMsg(t('voice_denied'), 'err');
+      setVozMsg(t('voice_denied') + cod, 'err');
     }else if(ev.error === 'no-speech'){
       // silêncio no início: deixa o próprio timer de pausa/limite decidir, não corta na hora
+      setVozMsg(t('voice_listening') + cod);
     }else if(ev.error !== 'aborted'){
       pararDeOuvir();
-      setVozMsg(t('voice_error'), 'err');
+      setVozMsg(t('voice_error') + cod, 'err');
+    }else{
+      setVozMsg(t('voice_listening') + cod);
     }
   };
   reconhecimento.onend = ()=>{
     // o motor pode parar sozinho (ex: perda de conexão); aproveita o que já foi ouvido
-    if(ouvindo) finalizarEscuta();
+    if(ouvindo){
+      if(!vozUltimoTexto.trim()) setVozMsg(t('voice_error') + ' [fim sem resultado]', 'err');
+      finalizarEscuta();
+    }
   };
 
   try{ reconhecimento.start(); }
-  catch(e){ setVozMsg(t('voice_error'), 'err'); pararDeOuvir(); }
+  catch(e){ setVozMsg(t('voice_error') + ' [start: ' + (e && e.message || e) + ']', 'err'); pararDeOuvir(); }
 }
 
 document.getElementById('voiceBtn').addEventListener('click', iniciarVoz);
