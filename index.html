@@ -3606,6 +3606,7 @@ function renderBalanceCards(){
     const parsed = parseFloat(input.value);
     state.saldoAnchor[method] = { valor: isNaN(parsed) ? 0 : parsed, criadoEm: Date.now() };
     saveState();
+    document.body.classList.remove('kb-open'); // renderAll() a seguir recria este input, o blur nunca "termina" nele
     renderAll();
   }
 
@@ -3703,12 +3704,17 @@ function setAddMsg(msg, isError){
   });
 
   // enquanto o teclado está aberto a barra sairia flutuando sobre ele
-  document.addEventListener('focusin', (e)=>{
-    if(e.target.matches('input, select, textarea')) document.body.classList.add('kb-open');
-  });
-  document.addEventListener('focusout', (e)=>{
-    if(e.target.matches('input, select, textarea')) document.body.classList.remove('kb-open');
-  });
+  // captura (não borbulhamento) porque o campo dos cartões de saldo (Contanti/Carta)
+  // se destrói a si próprio dentro do seu 'blur' (o commit chama renderAll, que
+  // recria o input); nessa hora o 'focusout', que borbulha, nunca chega a sair de
+  // um elemento que já foi removido da árvore — 'blur' com capture roda antes disso,
+  // então sempre limpa a barra mesmo quando o elemento é destruído em seguida
+  document.addEventListener('focus', (e)=>{
+    if(e.target.matches && e.target.matches('input, select, textarea')) document.body.classList.add('kb-open');
+  }, true);
+  document.addEventListener('blur', (e)=>{
+    if(e.target.matches && e.target.matches('input, select, textarea')) document.body.classList.remove('kb-open');
+  }, true);
 
   // os dois seletores de período (gráficos e lançamentos) andam juntos
   document.querySelectorAll('.ptbtn[data-period]').forEach(btn=>{
