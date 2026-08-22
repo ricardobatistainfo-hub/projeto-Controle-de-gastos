@@ -3741,15 +3741,20 @@ function setAddMsg(msg, isError){
   // recria o input); nessa hora o 'focusout', que borbulha, nunca chega a sair de
   // um elemento que já foi removido da árvore — 'blur' com capture roda antes disso,
   // então sempre limpa a barra mesmo quando o elemento é destruído em seguida
-  // só input/textarea de fato abrem teclado; um <select> abre o menu nativo
-  // do próprio SO, e mexer no body (classe kb-open anima a .tabbar embaixo)
-  // bem no instante em que esse menu está abrindo faz o Safari do iOS
-  // fechá-lo sozinho quase na hora — por isso select fica de fora daqui
+  // só campo que de fato abre teclado entra aqui; <select> e os inputs de
+  // data/hora abrem um seletor nativo do próprio SO (roleta/calendário), e
+  // mexer no body (classe kb-open anima a .tabbar embaixo) bem no instante
+  // em que esse seletor está abrindo faz o Safari do iOS fechá-lo sozinho
+  // quase na hora — por isso todos esses tipos ficam de fora daqui
+  const ABRE_SELETOR_NATIVO = 'select, input[type=date], input[type=time], input[type=month], input[type=week], input[type=datetime-local]';
+  function abreTeclado(el){
+    return el.matches && el.matches('input, textarea') && !el.matches(ABRE_SELETOR_NATIVO);
+  }
   document.addEventListener('focus', (e)=>{
-    if(e.target.matches && e.target.matches('input, textarea')) document.body.classList.add('kb-open');
+    if(abreTeclado(e.target)) document.body.classList.add('kb-open');
   }, true);
   document.addEventListener('blur', (e)=>{
-    if(e.target.matches && e.target.matches('input, textarea')) document.body.classList.remove('kb-open');
+    if(abreTeclado(e.target)) document.body.classList.remove('kb-open');
   }, true);
 
   // reajusta a fonte dos valores das contas se a tela girar/redimensionar
