@@ -367,12 +367,26 @@
 
   #saveStatus{font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(242,245,250,0.4);text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;}
 
+  /* o desfoque fica numa camada própria (::before), não no próprio .panel —
+     um <select> com um ancestral em backdrop-filter faz o Safari do iOS abrir
+     o menu nativo (idioma/moeda/categoria/pagamento) flutuando fora do lugar
+     em vez de colado ao campo; assim o visual continua igual mas o <select>
+     não tem mais esse ancestral problemático */
   .panel{
-    background:rgba(18,21,31,0.7);
-    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    position:relative;
+    background:transparent;
     border:1px solid var(--line); border-radius:14px;
     padding:18px 16px; margin-bottom:16px;
     box-shadow:0 0 0 1px rgba(255,255,255,0.02) inset;
+  }
+  .panel::before{
+    content:'';
+    position:absolute; inset:0;
+    background:rgba(18,21,31,0.7);
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border-radius:inherit;
+    z-index:-1;
+    pointer-events:none;
   }
   .panel h2{
     font-family:'JetBrains Mono',monospace;text-transform:uppercase;font-size:11px;
