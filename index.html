@@ -3145,8 +3145,16 @@ function renderDonut(d){
     const cat = catById(catId);
     const cor = cat ? cat.color : '#888';
     const trecho = (val/total) * C;
+    // uma categoria bem pequena (trecho < 1.5) deixava esse primeiro número
+    // negativo — stroke-dasharray negativo é inválido em SVG, e o navegador
+    // reage descartando o recorte inteiro: o círculo vira um anel cheio,
+    // sólido, por cima de todos os outros. Math.max trava em 0 pra nunca
+    // gerar um valor inválido (a fatia só fica pequena/invisível, o que já
+    // era o esperado pra uma categoria com peso quase zero)
+    const visivel = Math.max(trecho - 1.5, 0);
+    const vazio = Math.max(C - visivel, 0);
     const arco = `<circle class="arc" cx="75" cy="75" r="${R}" stroke="${cor}" stroke-width="${esp}"
-      stroke-dasharray="${(trecho-1.5).toFixed(2)} ${(C-trecho+1.5).toFixed(2)}"
+      stroke-dasharray="${visivel.toFixed(2)} ${vazio.toFixed(2)}"
       stroke-dashoffset="${(-offset).toFixed(2)}" transform="rotate(-90 75 75)"/>`;
     offset += trecho;
     return arco;
