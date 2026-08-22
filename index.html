@@ -89,6 +89,11 @@
   .greeting-eyebrow b{color:#fff;font-weight:600;}
 
   .tab-views{position:relative;flex:1;min-height:0;}
+  /* sem transform aqui (nem na transição): um <select> com um ancestral que
+     passa por transform — mesmo settando de volta pra none — faz o Safari
+     do iOS abrir o menu nativo (idioma/moeda/período/categoria/pagamento)
+     flutuando fora do lugar, do mesmo jeito que o backdrop-filter fazia
+     (ver .panel); por isso a troca de aba agora é só um fade de opacidade */
   .tab-view{
     position:absolute;inset:0;
     overflow-y:auto;overflow-x:hidden;
@@ -96,13 +101,11 @@
     overscroll-behavior:contain;
     padding-bottom:calc(var(--tabbar-h) + var(--safe-b) + 44px);
     opacity:0;pointer-events:none;
-    transform:translateX(14px);
-    transition:opacity .2s ease, transform .22s cubic-bezier(.22,1,.36,1);
+    transition:opacity .2s ease;
   }
-  .tab-view.back{transform:translateX(-14px);}
-  .tab-view.active{opacity:1;pointer-events:auto;transform:none;}
+  .tab-view.active{opacity:1;pointer-events:auto;}
   @media (prefers-reduced-motion:reduce){
-    .tab-view, .tab-view.back{transform:none;transition:opacity .15s linear;}
+    .tab-view{transition:opacity .15s linear;}
   }
 
   .tabbar{
@@ -684,7 +687,8 @@
   .balance-card .bc-label{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(242,245,250,0.5);margin-bottom:4px;}
   .balance-card .bc-value{
     font-family:'Fraunces',serif;font-size:27px;font-weight:700;color:var(--parchment);
-    line-height:1.1;letter-spacing:-0.01em;word-break:break-word;
+    line-height:1.1;letter-spacing:-0.01em;
+    white-space:nowrap;overflow:hidden;max-width:100%;
   }
   .balance-card .bc-value.neg{color:var(--neg);}
   .balance-card .bc-value.pos{color:var(--pos);}
@@ -3580,6 +3584,18 @@ function currentBalance(method){
   return anchor.valor + entradas - saidas;
 }
 
+// número grande (ex: R$ 1300,00) não quebra linha — em vez disso a fonte
+// diminui até caber numa linha só, sem mexer no layout do cartão
+function fitBalanceValue(el){
+  const max = 27, min = 15;
+  let size = max;
+  el.style.fontSize = size + 'px';
+  while(size > min && el.scrollWidth > el.clientWidth){
+    size -= 1;
+    el.style.fontSize = size + 'px';
+  }
+}
+
 function renderBalanceCards(){
   const area = document.getElementById('balanceCardsArea');
   const methods = [
@@ -3598,6 +3614,8 @@ function renderBalanceCards(){
       <input type="number" step="0.01" class="bc-edit-input" data-method="${m.key}" value="${v.toFixed(2)}" style="display:none;">
     </div>`;
   }).join('');
+
+  area.querySelectorAll('.bc-value').forEach(fitBalanceValue);
 
   document.getElementById('balanceTotalArea').innerHTML = `
     <span class="bt-label" data-i18n="total_balance">Saldo total</span>
@@ -3723,12 +3741,19 @@ function setAddMsg(msg, isError){
   // recria o input); nessa hora o 'focusout', que borbulha, nunca chega a sair de
   // um elemento que já foi removido da árvore — 'blur' com capture roda antes disso,
   // então sempre limpa a barra mesmo quando o elemento é destruído em seguida
+  // só input/textarea de fato abrem teclado; um <select> abre o menu nativo
+  // do próprio SO, e mexer no body (classe kb-open anima a .tabbar embaixo)
+  // bem no instante em que esse menu está abrindo faz o Safari do iOS
+  // fechá-lo sozinho quase na hora — por isso select fica de fora daqui
   document.addEventListener('focus', (e)=>{
-    if(e.target.matches && e.target.matches('input, select, textarea')) document.body.classList.add('kb-open');
+    if(e.target.matches && e.target.matches('input, textarea')) document.body.classList.add('kb-open');
   }, true);
   document.addEventListener('blur', (e)=>{
-    if(e.target.matches && e.target.matches('input, select, textarea')) document.body.classList.remove('kb-open');
+    if(e.target.matches && e.target.matches('input, textarea')) document.body.classList.remove('kb-open');
   }, true);
+
+  // reajusta a fonte dos valores das contas se a tela girar/redimensionar
+  window.addEventListener('resize', ()=> document.querySelectorAll('.bc-value').forEach(fitBalanceValue));
 
   // os dois seletores de período (gráficos e lançamentos) andam juntos
   document.querySelectorAll('.ptbtn[data-period]').forEach(btn=>{
