@@ -428,26 +428,26 @@
   .btn:active{transform:scale(0.95);}
   .btn.secondary{background:transparent;border:1px solid var(--essencial);color:var(--essencial);box-shadow:none;}
 
-  .dictate-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
   .dictate-btn{
-    flex:none;width:44px;height:44px;border-radius:50%;
+    width:100%;display:flex;align-items:center;justify-content:center;gap:9px;
     background:rgba(77,212,255,0.1);border:1px solid rgba(77,212,255,0.35);
-    color:var(--essencial);display:flex;align-items:center;justify-content:center;
-    cursor:pointer;transition:transform .15s ease, box-shadow .2s ease, background .2s ease;
+    color:var(--essencial);
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;
+    border-radius:12px;padding:12px 14px;cursor:pointer;margin-bottom:8px;
+    transition:transform .15s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
   }
-  .dictate-btn:hover{box-shadow:0 0 16px -2px var(--essencial);}
-  .dictate-btn:active{transform:scale(0.92);}
+  .dictate-btn:hover{border-color:var(--essencial);box-shadow:0 0 16px -2px var(--essencial);}
+  .dictate-btn:active{transform:scale(0.98);}
   .dictate-btn.listening{
-    background:var(--neg);border-color:var(--neg);color:var(--ink);
+    background:var(--neg);border-color:var(--neg);color:#fff;
     animation:dictatePulse 1.4s ease-in-out infinite;
   }
   .dictate-btn.processing{opacity:0.55;cursor:default;animation:none;}
   @keyframes dictatePulse{0%,100%{box-shadow:0 0 0 0 rgba(255,92,122,0.45);}50%{box-shadow:0 0 0 9px rgba(255,92,122,0);}}
   @media (prefers-reduced-motion:reduce){ .dictate-btn.listening{animation:none;} }
-  .dictate-info{flex:1;min-width:0;}
   .dictate-status{
-    font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:0.02em;
-    color:rgba(242,245,250,0.45);line-height:1.4;
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.02em;
+    color:rgba(242,245,250,0.45);line-height:1.4;text-align:center;margin-bottom:16px;
   }
   .dictate-status.rec{color:var(--neg);}
   .dictate-status.ok{color:var(--pos);}
@@ -1053,18 +1053,15 @@
     </div>
 
     <div class="panel">
-      <div class="dictate-row">
-        <button class="dictate-btn" id="dictateBtn" type="button" aria-label="Ditar lançamento">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="2" width="6" height="12" rx="3"></rect>
-            <path d="M5 10a7 7 0 0 0 14 0"></path>
-            <line x1="12" y1="19" x2="12" y2="22"></line>
-          </svg>
-        </button>
-        <div class="dictate-info">
-          <div class="dictate-status" id="dictateStatus" data-i18n="dictate_hint">ex: "gastei 12 no mercado com cartão"</div>
-        </div>
-      </div>
+      <button class="dictate-btn" id="dictateBtn" type="button">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="2" width="6" height="12" rx="3"></rect>
+          <path d="M5 10a7 7 0 0 0 14 0"></path>
+          <line x1="12" y1="19" x2="12" y2="22"></line>
+        </svg>
+        <span id="dictateLabel" data-i18n="dictate_cta">Ditar e adicionar automaticamente</span>
+      </button>
+      <div class="dictate-status" id="dictateStatus" data-i18n="dictate_hint">ex: "gastei 12 no mercado com cartão"</div>
       <div class="expense-form">
         <div>
           <label id="fValorLabel">Valor (€)</label>
@@ -1520,6 +1517,7 @@ const I18N = {
     expense_type: 'Saída', income_type: 'Entrada',
     categories: 'Categorias', manage_categories: 'gerir categorias',
     recent_entries: 'ver lançamentos',
+    dictate_cta: 'Ditar e adicionar automaticamente',
     dictate_hint: 'ex: "gastei 12 no mercado com cartão"',
     dictate_listening: 'a ouvir… toca para parar',
     dictate_processing: 'a transcrever...',
@@ -1604,6 +1602,7 @@ const I18N = {
     expense_type: 'Uscita', income_type: 'Entrata',
     categories: 'Categorie', manage_categories: 'gestisci categorie',
     recent_entries: 'vedi movimenti',
+    dictate_cta: 'Detta e aggiungi automaticamente',
     dictate_hint: 'es: "speso 12 al mercato con carta"',
     dictate_listening: 'in ascolto... tocca per fermare',
     dictate_processing: 'trascrizione in corso...',
@@ -1688,6 +1687,7 @@ const I18N = {
     expense_type: 'Expense', income_type: 'Income',
     categories: 'Categories', manage_categories: 'manage categories',
     recent_entries: 'view entries',
+    dictate_cta: 'Dictate and add automatically',
     dictate_hint: 'e.g: "spent 12 at the market with card"',
     dictate_listening: 'listening... tap to stop',
     dictate_processing: 'transcribing...',
@@ -2602,6 +2602,17 @@ function setDictateMsg(msg, kind){
   el.className = 'dictate-status' + (kind ? ' ' + kind : '');
 }
 
+// o rótulo dentro do botão sempre descreve a ação atual (parado/a ouvir/a transcrever)
+function setDictateLabel(msg){
+  const el = document.getElementById('dictateLabel');
+  if(!el) return;
+  el.removeAttribute('data-i18n');
+  el.textContent = msg;
+}
+function resetDictateLabel(){
+  setDictateLabel(t('dictate_cta'));
+}
+
 function pickDictateMime(){
   const candidatos = ['audio/mp4','audio/aac','audio/webm;codecs=opus','audio/webm'];
   for(const c of candidatos){
@@ -2651,7 +2662,8 @@ async function iniciarDitado(){
 
   dictadoOuvindo = true;
   btn.classList.add('listening');
-  setDictateMsg(t('dictate_listening'), 'rec');
+  setDictateLabel(t('dictate_listening'));
+  setDictateMsg('');
   rec.start();
   dictadoTimerMax = setTimeout(()=> pararDitado(), DICTADO_MAX_MS);
 }
@@ -2662,18 +2674,19 @@ function pararDitado(){
   const btn = document.getElementById('dictateBtn');
   btn.classList.remove('listening');
   btn.classList.add('processing');
+  setDictateLabel(t('dictate_processing'));
   if(dictadoRec && dictadoRec.state !== 'inactive') dictadoRec.stop();
   if(dictadoStream) dictadoStream.getTracks().forEach(tr=>tr.stop());
 }
 
 async function processarDitado(mime){
   const btn = document.getElementById('dictateBtn');
-  setDictateMsg(t('dictate_processing'), 'rec');
   const blob = new Blob(dictadoChunks, { type: mime });
   dictadoChunks = [];
 
   if(blob.size < 300){
     btn.classList.remove('processing');
+    resetDictateLabel();
     dictadoBusy = false;
     setDictateMsg(t('dictate_no_value'), 'err');
     return;
@@ -2687,6 +2700,7 @@ async function processarDitado(mime){
     });
     const dados = await resposta.json().catch(()=>({}));
     btn.classList.remove('processing');
+    resetDictateLabel();
     dictadoBusy = false;
     if(!resposta.ok || dados.erro){
       setDictateMsg(t('dictate_error_server'), 'err');
@@ -2695,6 +2709,7 @@ async function processarDitado(mime){
     aplicarDitado((dados.texto || '').trim());
   }catch(err){
     btn.classList.remove('processing');
+    resetDictateLabel();
     dictadoBusy = false;
     setDictateMsg(t('dictate_error_server'), 'err');
   }
