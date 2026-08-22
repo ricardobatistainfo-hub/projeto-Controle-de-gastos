@@ -3632,6 +3632,14 @@ function showTab(name, opts){
   const push = !opts || opts.push !== false;
   const indoParaTras = TABS.indexOf(name) < TABS.indexOf(currentTab);
 
+  // troca de aba sempre libera o teclado/foco que ficou pendurado num campo —
+  // sem isso, sair de um <select> pelo próprio JS (sem o usuário tocar fora
+  // dele) deixa a barra escondida (.kb-open) presa mesmo depois de voltar pra Banca
+  document.body.classList.remove('kb-open');
+  if(document.activeElement && document.activeElement !== document.body && document.activeElement.blur){
+    document.activeElement.blur();
+  }
+
   TABS.forEach(tab=>{
     const view = document.getElementById(TAB_VIEW_ID[tab]);
     if(!view) return;
