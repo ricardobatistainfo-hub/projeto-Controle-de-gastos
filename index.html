@@ -144,7 +144,13 @@
   .tabbtn:active{transform:scale(0.92);}
   .tabbtn.active{color:var(--essencial);}
   .tabbtn.active svg{filter:drop-shadow(0 0 6px rgba(77,212,255,0.6));}
-  .tabbtn.active::before{
+  /* :not(.center) porque o botão central também vira "active" quando a aba
+     Adicionar está aberta, e esse ::before tem a mesma especificidade do
+     ::before do brilho ambiente dele (.tabbtn.center::before) — a barrinha
+     de 22x2px não faz sentido nesse botão de qualquer forma, então exclui
+     pra não ficar um valor híbrido dos dois (mesmo isolado não reproduzi
+     vazamento visível nisso; é limpeza, não é a causa do bug do quadrado) */
+  .tabbtn.active:not(.center)::before{
     content:"";position:absolute;top:-1px;left:50%;transform:translateX(-50%);
     width:22px;height:2px;border-radius:2px;background:var(--essencial);
     box-shadow:0 0 10px 1px rgba(77,212,255,0.8);
@@ -163,6 +169,12 @@
     background:radial-gradient(circle at 50% 42%, rgba(15,58,92,0.6), rgba(6,18,36,0.7) 78%);
     backdrop-filter:blur(10px) saturate(160%);
     -webkit-backdrop-filter:blur(10px) saturate(160%);
+    /* o Safari do iOS às vezes ignora o border-radius do backdrop-filter
+       num círculo que também está animando (é o caso deste botão): o
+       desfoque desenha como o retângulo que envolve o elemento, não como
+       o círculo, e sobra um pedacinho quadrado colado pra fora. Dar uma
+       máscara (mesmo sem mudar nada visualmente) força o recorte certo */
+    -webkit-mask-image:-webkit-radial-gradient(circle, #fff 99%, transparent 100%);
     border:1px solid rgba(140,210,255,0.4);
     color:#fff;
     align-items:center;justify-content:center;
