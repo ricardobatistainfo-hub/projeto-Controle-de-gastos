@@ -553,14 +553,19 @@
   .flow-net .fn-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(242,245,250,0.5);}
   .flow-net .fn-val{font-family:'Fraunces',serif;font-size:22px;font-weight:700;}
 
-  /* rosca em SVG: cresce ao aparecer e mostra a variação no centro */
-  .donut-svg{width:150px;height:150px;flex-shrink:0;}
+  /* rosca em SVG: mostra a variação no centro. A entrada anima o <svg>
+     inteiro (opacity+scale), não o stroke-dasharray de cada fatia — o
+     Safari do iOS tem um bug em que um @keyframes com "from" incompleto
+     aplicado a várias tags com a mesma animação calcula o valor final
+     (o "to" implícito) uma vez só e reusa pra todas, fazendo toda fatia
+     terminar com o mesmo comprimento/posição da primeira — o anel vira
+     uma cor só em vez de mostrar cada categoria */
+  .donut-svg{width:150px;height:150px;flex-shrink:0;animation:donutIn .5s cubic-bezier(.22,1,.36,1) both;}
+  @keyframes donutIn{from{opacity:0;transform:scale(0.85);}to{opacity:1;transform:scale(1);}}
   .donut-svg .arc{
     fill:none;stroke-linecap:butt;
     transition:stroke-width .2s ease;
-    animation:arcDraw .8s cubic-bezier(.22,1,.36,1) both;
   }
-  @keyframes arcDraw{from{stroke-dasharray:0 999;}}
   .donut-mid{font-family:'JetBrains Mono',monospace;fill:var(--parchment);font-size:15px;font-weight:700;text-anchor:middle;}
   .donut-sub{font-family:'JetBrains Mono',monospace;fill:rgba(242,245,250,0.4);font-size:7.5px;text-anchor:middle;letter-spacing:0.08em;}
   .legend-row .pct{font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(242,245,250,0.35);flex-shrink:0;}
